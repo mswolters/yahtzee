@@ -1,6 +1,14 @@
 ﻿namespace Yahtzee.Models.Rules;
 
-public abstract class Rule
+public interface IRule
+{
+    public string Name { get; }
+    public string Description { get; }
+    
+    public Score Score(IList<DieRoll> rolls, Scoreboard board);
+}
+
+public abstract class Rule : IRule
 {
     private readonly string _nameIndex;
     private readonly string _descriptionIndex;
@@ -22,9 +30,14 @@ public abstract class Rule
         return HashCode.Combine(_nameIndex, _descriptionIndex);
     }
 
-    public Rule(String nameIndex, String descriptionIndex)
+    protected Rule(string nameIndex, string descriptionIndex)
     {
         _nameIndex = nameIndex;
         _descriptionIndex = descriptionIndex;
     }
+}
+
+public interface IHasDependantRules : IRule
+{
+    public int[] DependantRulesIndices { get; }
 }

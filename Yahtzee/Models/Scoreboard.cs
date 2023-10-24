@@ -17,54 +17,69 @@ public class Scoreboard
         _rulesWithScores = new List<RuleWithScore>();
     }
 
-    public Scoreboard(IEnumerable<Rule> rules)
+    public Scoreboard(IEnumerable<IRule> rules)
     {
         _rulesWithScores = rules.Select(RuleWithScore.DefaultForRule).ToList();
     }
 
-    public Scoreboard(Scoreboard copy) {
+    public Scoreboard(Scoreboard copy)
+    {
         _rulesWithScores = copy.RulesWithScores.Select(rs => new RuleWithScore(rs.Rule, rs.Score)).ToList();
     }
 
-    public record struct RuleWithScore(Rule Rule, Score Score)
+    public record struct RuleWithScore(IRule Rule, Score Score)
     {
-        internal static RuleWithScore DefaultForRule(Rule rule)
+        internal static RuleWithScore DefaultForRule(IRule rule)
         {
             return new RuleWithScore(rule, new Score(0, false));
         }
     }
 
-    public Score ScoreForRule(Rule rule)
+    public Score ScoreForRule(IRule rule)
     {
         return _rulesWithScores.Where(rs => Equals(rs.Rule, rule)).Select(rs => rs.Score).First();
     }
 
-    public IEnumerable<Rule> Rules => _rulesWithScores.Select(rs => rs.Rule);
+    public IList<IRule> Rules => _rulesWithScores.Select(rs => rs.Rule).ToList();
 
     public IList<RuleWithScore> RulesWithScores => new List<RuleWithScore>(_rulesWithScores);
 
-    public void AddRule(Rule rule)
+    public void AddRule(IRule rule)
     {
         _rulesWithScores.Add(RuleWithScore.DefaultForRule(rule));
     }
 
-    public void RemoveRule(Rule rule)
+    public void RemoveRule(IRule rule)
     {
-        _rulesWithScores.RemoveAll(rs => rs.Rule == rule);
+        _rulesWithScores.RemoveAll(rs => Equals(rs.Rule, rule));
     }
 
-    public void SetScore(Rule rule, Score score)
+    public void SetScore(IRule rule, Score score)
     {
-        var index = _rulesWithScores.FindIndex(rs => rs.Rule == rule);
+        var index = _rulesWithScores.FindIndex(rs => Equals(rs.Rule, rule));
         _rulesWithScores[index] = new RuleWithScore(rule, score);
+        UpdateDependantScores(index);
     }
 
     public RuleWithScore this[int index] => _rulesWithScores[index];
 
-    public Score this[Rule key]
+    public Score this[IRule key]
     {
         get => ScoreForRule(key);
         set => SetScore(key, value);
+    }
+
+    private void UpdateDependantScores(int index)
+    {
+        var rulesWhichDependsOnIndex = _rulesWithScores
+            .Select(rs => rs.Rule)
+            .OfType<IHasDependantRules>()
+            .Where(hasDependants => hasDependants.DependantRulesIndices.Contains(index))
+            .ToList(); // Prevent modification of the underlying collection while enumerating by forcing the enumeration to run to the end
+        foreach (var ruleWhichDependsOnIndex in rulesWhichDependsOnIndex)
+        {
+            SetScore(ruleWhichDependsOnIndex, ruleWhichDependsOnIndex.Score(new List<DieRoll>(), this));
+        }
     }
 
     private readonly ScoreboardWriter _writer = new(16, 5);
@@ -77,7 +92,6 @@ public class Scoreboard
 
 internal record class ScoreboardWriter(int RuleWidth, int ScoreWidth)
 {
-
     public string Stringify(Scoreboard scoreboard)
     {
         var sb = new StringBuilder();
@@ -112,10 +126,12 @@ internal record class ScoreboardWriter(int RuleWidth, int ScoreWidth)
         {
             return PadCenter("-", ScoreWidth);
         }
+
         if (score.Written)
         {
             return score.Value.ToString().PadLeft(ScoreWidth - 1).PadRight(ScoreWidth);
         }
+
         return ("{" + score.Value + "}").PadLeft(ScoreWidth);
     }
 
@@ -127,11 +143,11 @@ internal record class ScoreboardWriter(int RuleWidth, int ScoreWidth)
             str = str[..length];
             strLength = length;
         }
+
         var numPadChars = length - strLength;
         var padLeft = length - numPadChars / 2;
         return str.PadLeft(padLeft, padChar).PadRight(length);
     }
-
 }
 
 /// <summary>
@@ -140,13 +156,11 @@ internal record class ScoreboardWriter(int RuleWidth, int ScoreWidth)
 /// </summary>
 public readonly record struct Score(int Value, bool Written = true)
 {
-
     public static Score operator +(Score left, Score right)
     {
         return new Score(left.Value + right.Value, left.Written && right.Written);
     }
 }
-
 
 internal static class ScoreExtensions
 {

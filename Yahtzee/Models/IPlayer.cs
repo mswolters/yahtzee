@@ -13,6 +13,6 @@ internal interface IPlayablePlayer : IPlayer
 {
 
     public Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state);
-    public Task<Rule> PickRuleToApply(TurnState.PickRuleTurnState state);
+    public Task<IRule> PickRuleToApply(TurnState.PickRuleTurnState state);
 
 }

@@ -28,7 +28,7 @@ internal class MockPlayer : IPlayablePlayer
         return Task.FromResult((IList<DieRoll>)_keptIndices.Select(i => allRolls[i]).ToList());
     }
 
-    public Task<Rule> PickRuleToApply(TurnState.PickRuleTurnState state)
+    public Task<IRule> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
         return Task.FromResult(state.Scoreboard.Rules.ElementAt(_pickRuleIndex));
     }

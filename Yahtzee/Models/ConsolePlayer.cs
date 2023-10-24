@@ -52,7 +52,7 @@ internal class ConsolePlayer : IPlayablePlayer
     }
 
 
-    public async Task<Rule> PickRuleToApply(TurnState.PickRuleTurnState state)
+    public async Task<IRule> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
         Console.WriteLine("Current scores: ");
         Console.WriteLine(state.Scoreboard.ToString());
