@@ -13,6 +13,8 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
     public int ThrowsPerTurn { get; }
     public int DicePerThrow { get; }
     public int SidesPerDie { get; }
+    
+    public bool HasEnded => _scoreboard.RulesWithScores.Last().Score.Written;
 
     public GameState(int throwsPerTurn = 3, int dicePerThrow = 5, int sidesPerDie = 6)
     {
@@ -30,14 +32,16 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             turnState = await DoPartialTurn(turnState, player, random);
         }
 
-        var appliedRule = await player.PickRuleToApply(_scoreboard, turnState.KeptDice);
+        var appliedRule = await player.PickRuleToApply(new TurnState.PickRuleTurnState(_scoreboard, turnState.KeptDice));
         _scoreboard.SetScore(appliedRule, appliedRule.Score(turnState.KeptDice, _scoreboard));
     }
 
-    internal async Task<TurnState> DoPartialTurn(TurnState turnState, IPlayablePlayer player, Random random)
+    internal async Task<TurnState.RollTurnState> DoPartialTurn(TurnState.RollTurnState turnState, IPlayablePlayer player, Random random)
     {
         var rolledDice = DoRoll(turnState, random);
-        DiceRolled?.Invoke(this, new(player, rolledDice));
+        DiceRolled?.Invoke(this, new DiceRolledEventArgs(player, rolledDice));
+        var stateVisibleToPlayer =
+            new TurnState.RollTurnState(turnState.ThrowCount + 1, rolledDice, turnState.KeptDice);
         IList<DieRoll> heldDice;
         if (turnState.ThrowCount >= ThrowsPerTurn - 1)
         {
@@ -47,15 +51,15 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         else
         {
             // The player gets to choose which dice to keep in any other case
-            heldDice = await player.PickDiceToKeep(turnState, rolledDice);
+            heldDice = await player.PickDiceToKeep(stateVisibleToPlayer);
         }
-        DiceKept?.Invoke(this, new(player, heldDice));
-        return new TurnState(turnState.ThrowCount + 1, heldDice);
+        DiceKept?.Invoke(this, new DiceRolledEventArgs(player, heldDice));
+        return new TurnState.RollTurnState(stateVisibleToPlayer.ThrowCount, stateVisibleToPlayer.LastRoll, heldDice );
     }
 
-    internal IList<DieRoll> DoRoll(TurnState turnState, Random random)
+    internal IList<DieRoll> DoRoll(TurnState.RollTurnState turnState, Random random)
     {
-        var diceToThrow = DicePerThrow - turnState.KeptDice.Count();
+        var diceToThrow = DicePerThrow - turnState.KeptDice.Count;
         return Roll(Enumerable.Repeat(new Die(SidesPerDie), diceToThrow), random);
     }
 

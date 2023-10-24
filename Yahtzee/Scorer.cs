@@ -40,7 +40,7 @@ internal static class Scorer
         Rule bottomSum = new SumRule("RuleNameBottomSum", "RuleDescriptionBottomSum", board.Rules.ToList().IndicesOf(bottomRules).ToArray());
         board.AddRule(bottomSum);
 
-        Rule totalSum = new SumRule("RuleNameTotalSum", "RuleDescriptionTotalSum", board.Rules.ToList().IndicesOf(topTotalSum, bottomSum).ToArray());
+        Rule totalSum = new SumRule("RuleNameSum", "RuleDescriptionSum", board.Rules.ToList().IndicesOf(topTotalSum, bottomSum).ToArray());
         board.AddRule(totalSum);
 
         return board;

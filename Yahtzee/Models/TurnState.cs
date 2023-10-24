@@ -1,8 +1,12 @@
 ﻿namespace Yahtzee.Models;
 
-internal record TurnState(int ThrowCount, IList<DieRoll> KeptDice)
+internal abstract record TurnState
 {
 
-    public static readonly TurnState StartOfTurn = new(0, new List<DieRoll>());
+    public static readonly RollTurnState StartOfTurn = new RollTurnState(0, new List<DieRoll>(), new List<DieRoll>());
+
+    internal record RollTurnState(int ThrowCount, IList<DieRoll> LastRoll, IList<DieRoll> KeptDice) : TurnState;
+
+    internal record PickRuleTurnState(Scoreboard Scoreboard, IList<DieRoll> KeptDice) : TurnState;
 
 }

@@ -7,7 +7,12 @@ Console.WriteLine("Hello, World!");
 var state = new GameState();
 var player = new ConsolePlayer("Test");
 var random = new Random();
-await state.DoTurn(player, random);
 
-Console.WriteLine(state._scoreboard);
+while (!state.HasEnded)
+{
+    await state.DoTurn(player, random);
+
+    Console.WriteLine(state._scoreboard);
+}
+
 Console.ReadLine();

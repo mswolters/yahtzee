@@ -14,24 +14,13 @@ internal class ConsolePlayer : IPlayablePlayer
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public async Task<IList<DieRoll>> PickDiceToKeep(TurnState state, IList<DieRoll> rolls)
+
+    public async Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state)
     {
         Console.WriteLine($"Current roll: {state.ThrowCount}");
-        var keptCount = state.KeptDice.Count;
-        if (keptCount > 0)
-        {
-            Console.WriteLine("Kept dice:");
-            foreach (var line in state.KeptDice.Select((roll, index) => $"{index}: {roll.Value}"))
-            {
-                Console.WriteLine(line);
-            }
-        }
-        Console.WriteLine("New rolls:");
-        foreach (var line in rolls.Select((roll, index) => $"{index + keptCount}: {roll.Value}"))
-        {
-            Console.WriteLine(line);
-        }
-        var dice = state.KeptDice.Concat(rolls).ToList();
+        PrintRolls(state.KeptDice, state.LastRoll);
+        
+        var dice = state.KeptDice.Concat(state.LastRoll).ToList();
         var success = false;
         IList<DieRoll> selectedDice = new List<DieRoll>();
         while (!success)
@@ -62,11 +51,14 @@ internal class ConsolePlayer : IPlayablePlayer
         return parseResults.All(it => it.Success) && parseResults.All(it => it.Value >= 0 && it.Value < maxValue);
     }
 
-    public async Task<Rule> PickRuleToApply(Scoreboard board, IList<DieRoll> rolls)
+
+    public async Task<Rule> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
         Console.WriteLine("Current scores: ");
-        Console.WriteLine(board.ToString());
+        Console.WriteLine(state.Scoreboard.ToString());
 
+        PrintRolls(state.KeptDice, null);
+        
         var success = false;
         var selectedRuleIndex = -1;
         while (!success)
@@ -74,10 +66,31 @@ internal class ConsolePlayer : IPlayablePlayer
             Console.WriteLine("Pick a 0-indexed rule to apply");
             var picked = await AsyncConsole.ReadLineAsync();
             var result = TryParse(picked);
-            success = result is { Success: true, Value: >= 0 } && result.Value < board.RulesWithScores.Count;
+            success = result is { Success: true, Value: >= 0 } && result.Value < state.Scoreboard.RulesWithScores.Count;
             if (success) selectedRuleIndex = result.Value;
         }
-        return board[selectedRuleIndex].Rule;
+        return state.Scoreboard[selectedRuleIndex].Rule;
+    }
+
+    private static void PrintRolls(IList<DieRoll> keptRolls, IList<DieRoll>? newRolls)
+    {
+        var keptCount = keptRolls.Count;
+        if (keptCount > 0)
+        {
+            Console.WriteLine("Kept dice:");
+            foreach (var line in keptRolls.Select((roll, index) => $"[{index}]: {roll.Value}"))
+            {
+                Console.WriteLine(line);
+            }
+        }
+        Console.WriteLine("New rolls:");
+        if (newRolls?.Any() == true)
+        {
+            foreach (var line in newRolls.Select((roll, index) => $"[{index + keptCount}]: {roll.Value}"))
+            {
+                Console.WriteLine(line);
+            }
+        }
     }
 
     private record struct ParseResult(bool Success, int Value);

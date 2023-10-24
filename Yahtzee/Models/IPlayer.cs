@@ -12,7 +12,7 @@ public interface IPlayer : INotifyPropertyChanged
 internal interface IPlayablePlayer : IPlayer
 {
 
-    public Task<IList<DieRoll>> PickDiceToKeep(TurnState state, IList<DieRoll> rolls);
-    public Task<Rule> PickRuleToApply(Scoreboard board, IList<DieRoll> rolls);
+    public Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state);
+    public Task<Rule> PickRuleToApply(TurnState.PickRuleTurnState state);
 
 }

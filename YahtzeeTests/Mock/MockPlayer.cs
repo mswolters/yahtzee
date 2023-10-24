@@ -22,14 +22,14 @@ internal class MockPlayer : IPlayablePlayer
         _pickRuleIndex = index;
     }
 
-    public Task<IList<DieRoll>> PickDiceToKeep(TurnState state, IList<DieRoll> rolls)
+    public Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state)
     {
-        var allRolls = state.KeptDice.Concat(rolls).ToArray();
+        var allRolls = state.KeptDice.Concat(state.LastRoll).ToArray();
         return Task.FromResult((IList<DieRoll>)_keptIndices.Select(i => allRolls[i]).ToList());
     }
 
-    public Task<Rule> PickRuleToApply(Scoreboard board, IList<DieRoll> rolls)
+    public Task<Rule> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
-        return Task.FromResult(board.Rules.ElementAt(_pickRuleIndex));
+        return Task.FromResult(state.Scoreboard.Rules.ElementAt(_pickRuleIndex));
     }
 }

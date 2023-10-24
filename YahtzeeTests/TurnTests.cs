@@ -6,7 +6,6 @@ namespace Yahtzee.Tests;
 [TestClass]
 public class TurnTests
 {
-
     private MockRandom _random = new();
     private GameState _gameState = new(3, 5, 6);
     private MockPlayer _player = new();
@@ -23,7 +22,8 @@ public class TurnTests
     public void CorrectNumberOfDiceOnFirstRollTest()
     {
         _random.MockNext(0, 0, 0, 0, 0);
-        var roll = _gameState.DoRoll(new TurnState(0, DiceTestsHelpers.RollsOf()), _random);
+        var roll = _gameState.DoRoll(
+            new TurnState.RollTurnState(0, DiceTestsHelpers.RollsOf(), DiceTestsHelpers.RollsOf()), _random);
         YahtzeeAssert.AreEqual(DiceTestsHelpers.RollsOf(1, 1, 1, 1, 1), roll);
     }
 
@@ -31,7 +31,8 @@ public class TurnTests
     public void CorrectNumberOfDiceOnConsecutiveRollTest()
     {
         _random.MockNext(0, 0, 0, 0, 0);
-        var roll = _gameState.DoRoll(new TurnState(1, DiceTestsHelpers.RollsOf(1, 2, 3)), _random);
+        var roll = _gameState.DoRoll(
+            new TurnState.RollTurnState(1, DiceTestsHelpers.RollsOf(), DiceTestsHelpers.RollsOf(1, 2, 3)), _random);
         YahtzeeAssert.AreEqual(DiceTestsHelpers.RollsOf(1, 1), roll);
     }
 
@@ -40,7 +41,8 @@ public class TurnTests
     {
         _random.MockNext(0, 2, 1, 3, 0);
         _player.KeepDiceIndices(1, 2, 3);
-        var resultingState = await _gameState.DoPartialTurn(new TurnState(0, DiceTestsHelpers.RollsOf()), _player, _random);
+        var resultingState = await _gameState.DoPartialTurn(
+            new TurnState.RollTurnState(0, DiceTestsHelpers.RollsOf(), DiceTestsHelpers.RollsOf()), _player, _random);
         Assert.AreEqual(1, resultingState.ThrowCount);
         YahtzeeAssert.AreEqual(DiceTestsHelpers.RollsOf(3, 2, 4), resultingState.KeptDice);
     }
@@ -50,9 +52,9 @@ public class TurnTests
     {
         _random.MockNext(0, 1, 2, 3, 4);
         _player.KeepDiceIndices(0, 1);
-        var resultingState = await _gameState.DoPartialTurn(new TurnState(2, DiceTestsHelpers.RollsOf()), _player, _random);
+        var resultingState =
+            await _gameState.DoPartialTurn(new TurnState.RollTurnState(2, DiceTestsHelpers.RollsOf(), DiceTestsHelpers.RollsOf()), _player, _random);
         Assert.AreEqual(3, resultingState.ThrowCount);
-        YahtzeeAssert.AreEqual(DiceTestsHelpers.RollsOf(1,2,3,4,5), resultingState.KeptDice);
+        YahtzeeAssert.AreEqual(DiceTestsHelpers.RollsOf(1, 2, 3, 4, 5), resultingState.KeptDice);
     }
-
 }
