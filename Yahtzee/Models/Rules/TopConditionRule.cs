@@ -1,8 +1,10 @@
 ﻿namespace Yahtzee.Models.Rules;
 
-internal class TopConditionRule : Rule
+internal class TopConditionRule : Rule, IHasDependantRules
 {
     public int RuleIndex { get; }
+
+    public int[] DependantRulesIndices => new[] { RuleIndex };
     public int MinimumScore { get; }
     public int BonusScore { get; }
 
@@ -16,6 +18,6 @@ internal class TopConditionRule : Rule
     public override Score Score(IList<DieRoll> rolls, Scoreboard board)
     {
         var otherScore = board[RuleIndex].Score;
-        return new Score(otherScore.Value >= MinimumScore ? BonusScore : 0, otherScore.Written);
+        return otherScore with { Value = otherScore.Value >= MinimumScore ? BonusScore : 0 };
     }
 }
