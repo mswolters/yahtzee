@@ -1,29 +1,29 @@
 ﻿namespace Yahtzee.Models.Rules;
 
-internal class SumRule : Rule, IHasDependantRules
+internal class SumRule : Rule, IDependOnRules
 {
 
-    public int[] DependantRulesIndices { get; }
+    public int[] DependsOnIndices { get; }
 
     public SumRule(string nameIndex, string descriptionIndex, params int[] dependantRulesIndices) : base(nameIndex, descriptionIndex)
     {
-        DependantRulesIndices = dependantRulesIndices;
+        DependsOnIndices = dependantRulesIndices;
     }
 
     public override Score Score(IList<DieRoll> rolls, Scoreboard board)
     {   
-        return DependantRulesIndices.Select(i => board[i].Score).Sum();
+        return DependsOnIndices.Select(i => board[i].Score).Sum();
     }
 
     public override bool Equals(object? obj)
     {
         return obj is SumRule rule &&
                base.Equals(obj) &&
-               EqualityComparer<int[]>.Default.Equals(DependantRulesIndices, rule.DependantRulesIndices);
+               EqualityComparer<int[]>.Default.Equals(DependsOnIndices, rule.DependsOnIndices);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(base.GetHashCode(), DependantRulesIndices);
+        return HashCode.Combine(base.GetHashCode(), DependsOnIndices);
     }
 }

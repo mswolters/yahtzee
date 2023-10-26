@@ -73,8 +73,8 @@ public class Scoreboard
     {
         var rulesWhichDependsOnIndex = _rulesWithScores
             .Select(rs => rs.Rule)
-            .OfType<IHasDependantRules>()
-            .Where(hasDependants => hasDependants.DependantRulesIndices.Contains(index))
+            .OfType<IDependOnRules>()
+            .Where(hasDependants => hasDependants.DependsOnIndices.Contains(index))
             .ToList(); // Prevent modification of the underlying collection while enumerating by forcing the enumeration to run to the end
         foreach (var ruleWhichDependsOnIndex in rulesWhichDependsOnIndex)
         {

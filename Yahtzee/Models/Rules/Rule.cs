@@ -37,7 +37,7 @@ public abstract class Rule : IRule
     }
 }
 
-public interface IHasDependantRules : IRule
+public interface IDependOnRules : IRule
 {
-    public int[] DependantRulesIndices { get; }
+    public int[] DependsOnIndices { get; }
 }

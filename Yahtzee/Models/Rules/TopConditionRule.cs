@@ -1,10 +1,10 @@
 ﻿namespace Yahtzee.Models.Rules;
 
-internal class TopConditionRule : Rule, IHasDependantRules
+internal class TopConditionRule : Rule, IDependOnRules
 {
     public int RuleIndex { get; }
 
-    public int[] DependantRulesIndices => new[] { RuleIndex };
+    public int[] DependsOnIndices => new[] { RuleIndex };
     public int MinimumScore { get; }
     public int BonusScore { get; }
 
