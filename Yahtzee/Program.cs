@@ -13,7 +13,7 @@ while (!state.HasEnded)
 {
     await state.DoTurn(player, random);
 
-    Console.WriteLine(state._scoreboard);
+    Console.WriteLine(state.Scoreboard);
 }
 
 Console.ReadLine();

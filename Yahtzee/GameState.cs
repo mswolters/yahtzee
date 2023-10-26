@@ -6,7 +6,7 @@ namespace Yahtzee;
 
 internal class GameState : INotifyDiceRolled, INotifyDiceKept
 {
-    public Scoreboard _scoreboard = Scorer.DefaultBoard;
+    public Scoreboard Scoreboard { get; } = Scorer.DefaultBoard;
 
     public event DiceRolledEventHandler? DiceRolled;
     public event DiceKeptEventHandler? DiceKept;
@@ -15,7 +15,7 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
     public int DicePerThrow { get; }
     public int SidesPerDie { get; }
     
-    public bool HasEnded => _scoreboard.RulesWithScores.Last().Score.Written;
+    public bool HasEnded => Scoreboard.RulesWithScores.Last().Score.Written;
 
     public GameState(int throwsPerTurn = 3, int dicePerThrow = 5, int sidesPerDie = 6)
     {
@@ -33,8 +33,8 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             turnState = await DoPartialTurn(turnState, player, random);
         }
 
-        var appliedRule = await player.PickRuleToApply(new TurnState.PickRuleTurnState(_scoreboard, turnState.KeptDice));
-        _scoreboard.SetScore(appliedRule, appliedRule.Score(turnState.KeptDice, _scoreboard));
+        var appliedRule = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, turnState.KeptDice));
+        Scoreboard.SetScore(appliedRule, appliedRule.Score(turnState.KeptDice, Scoreboard));
     }
 
     internal async Task<TurnState.RollTurnState> DoPartialTurn(TurnState.RollTurnState turnState, IPlayablePlayer player, Random random)
