@@ -1,5 +1,6 @@
 ﻿using Yahtzee.EventHandler;
 using Yahtzee.Models;
+using Yahtzee.Models.Rules;
 using Yahtzee.Players;
 
 namespace Yahtzee;
@@ -33,7 +34,12 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             turnState = await DoPartialTurn(turnState, player, random);
         }
 
-        var appliedRule = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, turnState.KeptDice));
+        IRule appliedRule;
+        do
+        {
+            // Players are only allowed to pick rules which are playerWritable and which don't have a score yet.
+            appliedRule = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, turnState.KeptDice));
+        } while (!appliedRule.IsPlayerWritable && Scoreboard[appliedRule].Written);
         Scoreboard.SetScore(appliedRule, appliedRule.Score(turnState.KeptDice, Scoreboard));
     }
 

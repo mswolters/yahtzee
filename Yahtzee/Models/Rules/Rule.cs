@@ -4,6 +4,8 @@ public interface IRule
 {
     public string Name { get; }
     public string Description { get; }
+
+    public bool IsPlayerWritable => this is not IDependOnRules;
     
     public Score Score(IList<DieRoll> rolls, Scoreboard board);
 }
