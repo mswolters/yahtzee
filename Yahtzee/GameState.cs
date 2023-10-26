@@ -58,7 +58,10 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         else
         {
             // The player gets to choose which dice to keep in any other case
-            heldDice = await player.PickDiceToKeep(stateVisibleToPlayer);
+            do
+            {
+                heldDice = await player.PickDiceToKeep(stateVisibleToPlayer);
+            } while (!stateVisibleToPlayer.AllDice.ContainsAll(heldDice));
         }
         DiceKept?.Invoke(this, new DiceRolledEventArgs(player, heldDice));
         return new TurnState.RollTurnState(stateVisibleToPlayer.ThrowCount, stateVisibleToPlayer.LastRoll, heldDice );
