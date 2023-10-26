@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="ConsolePlayer_PickDiceToKeep_Current_roll___0_" xml:space="preserve">
+        <value>Current roll: {0}</value>
+    </data>
+    <data name="ConsolePlayer_PickDiceIndex" xml:space="preserve">
+        <value>Pick the index of dice to keep with a comma separated list
+Keep all dice to end your turn early</value>
+    </data>
+    <data name="ConsolePlayer_PickRuleToApply_Current_scores" xml:space="preserve">
+        <value>Current scores: </value>
+    </data>
+    <data name="ConsolePlayer_PickRuleToApply_Pick_a_0_indexed_rule_to_apply" xml:space="preserve">
+        <value>Pick a 0-indexed rule to apply</value>
+    </data>
+    <data name="ConsolePlayer_PrintRolls_Kept_dice_" xml:space="preserve">
+        <value>Kept dice:</value>
+    </data>
+    <data name="ConsolePlayer_PrintRolls_New_rolls_" xml:space="preserve">
+        <value>New rolls:</value>
+    </data>
+    <data name="ConsolePlayer_PrintRolls_RollLine" xml:space="preserve">
+        <value>[{0}]: {1}</value>
+    </data>
+</root>

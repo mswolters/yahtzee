@@ -18,7 +18,7 @@ internal class ConsolePlayer : IPlayablePlayer
 
     public async Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state)
     {
-        Console.WriteLine($"Current roll: {state.ThrowCount}");
+        Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PickDiceToKeep_Current_roll___0_, state.ThrowCount);
         PrintRolls(state.KeptDice, state.LastRoll);
         
         var dice = state.KeptDice.Concat(state.LastRoll).ToList();
@@ -26,8 +26,7 @@ internal class ConsolePlayer : IPlayablePlayer
         IList<DieRoll> selectedDice = new List<DieRoll>();
         while (!success)
         {
-            Console.WriteLine("Pick the index of dice to keep with a comma separated list");
-            Console.WriteLine("Keep all dice to end your turn early");
+            Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PickDiceIndex);
             var selectionString = await AsyncConsole.ReadLineAsync();
             var selection = selectionString.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)!;
             var parsedSelection = selection.Select(TryParse).ToList();
@@ -55,7 +54,7 @@ internal class ConsolePlayer : IPlayablePlayer
 
     public async Task<IRule> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
-        Console.WriteLine("Current scores: ");
+        Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PickRuleToApply_Current_scores);
         Console.WriteLine(state.Scoreboard.ToString());
 
         PrintRolls(state.KeptDice, null);
@@ -64,7 +63,7 @@ internal class ConsolePlayer : IPlayablePlayer
         var selectedRuleIndex = -1;
         while (!success)
         {
-            Console.WriteLine("Pick a 0-indexed rule to apply");
+            Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PickRuleToApply_Pick_a_0_indexed_rule_to_apply);
             var picked = await AsyncConsole.ReadLineAsync();
             var result = TryParse(picked);
             success = result is { Success: true, Value: >= 0 } && result.Value < state.Scoreboard.RulesWithScores.Count;
@@ -76,18 +75,19 @@ internal class ConsolePlayer : IPlayablePlayer
     private static void PrintRolls(IList<DieRoll> keptRolls, IList<DieRoll>? newRolls)
     {
         var keptCount = keptRolls.Count;
+        var rollLine = ConsolePlayerStrings.ConsolePlayer_PrintRolls_RollLine;
         if (keptCount > 0)
         {
-            Console.WriteLine("Kept dice:");
-            foreach (var line in keptRolls.Select((roll, index) => $"[{index}]: {roll.Value}"))
+            Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PrintRolls_Kept_dice_);
+            foreach (var line in keptRolls.Select((roll, index) => string.Format(rollLine, index, roll.Value)))
             {
                 Console.WriteLine(line);
             }
         }
-        Console.WriteLine("New rolls:");
+        Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PrintRolls_New_rolls_);
         if (newRolls?.Any() == true)
         {
-            foreach (var line in newRolls.Select((roll, index) => $"[{index + keptCount}]: {roll.Value}"))
+            foreach (var line in newRolls.Select((roll, index) => string.Format(rollLine, index + keptCount, roll.Value)))
             {
                 Console.WriteLine(line);
             }
