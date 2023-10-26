@@ -32,6 +32,7 @@ internal static class Scorer
 
         List<Rule> bottomRules = new();
         AddToListAndBoard(new SameRule(3), bottomRules, board);
+        AddToListAndBoard(new SameRule(4), bottomRules, board);
         AddToListAndBoard(new FullHouseRule(), bottomRules, board);
         AddToListAndBoard(new StraightRule(4, 30), bottomRules, board);
         AddToListAndBoard(new StraightRule(5, 40), bottomRules, board);
