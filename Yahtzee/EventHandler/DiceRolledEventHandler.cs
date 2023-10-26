@@ -1,4 +1,5 @@
 ﻿using Yahtzee.Models;
+using Yahtzee.Players;
 
 namespace Yahtzee.EventHandler;
 

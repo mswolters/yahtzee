@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel;
+using Yahtzee.Models;
 using Yahtzee.Models.Rules;
 
-namespace Yahtzee.Models;
+namespace Yahtzee.Players.ConsolePlayer;
 
 internal class ConsolePlayer : IPlayablePlayer
 {

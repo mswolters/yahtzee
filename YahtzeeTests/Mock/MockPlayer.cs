@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Yahtzee.Models;
 using Yahtzee.Models.Rules;
+using Yahtzee.Players;
 
 namespace Yahtzee.Tests.Mock;
 
