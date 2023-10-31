@@ -44,6 +44,9 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             turnState = await DoPartialTurn(turnState, player, random);
         }
 
+        // TODO special case rule selection
+        CheckAndExecuteYahtzeeSpecialCase(turnState.KeptDice);
+        
         IRule appliedRule;
         do
         {
@@ -87,6 +90,34 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
     {
         // We need to evaluate the enumerable by calling ToList, or it will keep giving different results every time it's evaluated
         return dice.Select(die => die.Roll(random)).ToList();
+    }
+    
+    private bool CheckAndExecuteYahtzeeSpecialCase(IList<DieRoll> finalKeptDice)
+    {
+        var yahtzee = Scoreboard[Scorer.YahtzeeRuleId];
+        // No need to check anything when yahtzee isn't rolled
+        if (yahtzee.Rule.Score(finalKeptDice, Scoreboard).Value == 0) return false;
+        // No special case when yahtzee hasn't been rolled before
+        if (!yahtzee.Score.Written) return false;
+        // No special case when yahtzee has been striked through
+        if (yahtzee.Score.Value == 0) return false;
+        
+        // Woohoo, bonus!
+        Scoreboard[yahtzee.Rule] = yahtzee.Score with { Value = yahtzee.Score.Value + 100 };
+        return true;
+
+        //TODO: Special case rule selection
+        // Score the total of all 5 dice in the appropriate Upper Section box.
+        // If this box has already been filled in, score as follows in any open Lower Section box:
+        // 3/4 of a kind: total of all 5 dice
+        // Full House: 25
+        // Small Straight: 30
+        // Large Straight: 40
+        // Chance: total of all 5 dice
+
+        // If the appropriate Upper Section box and all Lower Section boxes are
+        // all filled in, you must enter a zero in any Upper Section box.
+
     }
 
 }

@@ -10,7 +10,6 @@ internal class YahtzeeRule : Rule
     {
         if (rolls.GroupBy(roll => roll.Value).Count() == 1)
         {
-            // TODO: Special case multiple Yahtzees somehow
             return new Score(50);
         }
         return new Score(0);
