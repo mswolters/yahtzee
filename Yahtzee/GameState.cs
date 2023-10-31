@@ -49,7 +49,7 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         {
             // Players are only allowed to pick rules which are playerWritable and which don't have a score yet.
             appliedRule = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, turnState.KeptDice));
-        } while (!appliedRule.IsPlayerWritable && Scoreboard[appliedRule].Written);
+        } while (!appliedRule.IsPlayerWritable || Scoreboard[appliedRule].Written);
         Scoreboard.SetScore(appliedRule, appliedRule.Score(turnState.KeptDice, Scoreboard));
     }
 
