@@ -9,11 +9,6 @@ var state = new GameState();
 var player = new ConsolePlayer("Test");
 var random = new Random();
 
-while (!state.HasEnded)
-{
-    await state.DoTurn(player, random);
-
-    Console.WriteLine(state.Scoreboard);
-}
+await state.RunGame(player, random);
 
 Console.ReadLine();

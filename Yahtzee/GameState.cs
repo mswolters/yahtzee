@@ -25,6 +25,16 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         SidesPerDie = sidesPerDie;
     }
 
+    internal async Task RunGame(IPlayablePlayer player, Random random)
+    {
+        await player.StartGame(this);
+        while (!HasEnded)
+        {
+            await DoTurn(player, random);
+        }
+        await player.EndGame(this);
+    }
+    
     internal async Task DoTurn(IPlayablePlayer player, Random random)
     {
         var turnState = TurnState.StartOfTurn;
@@ -64,7 +74,7 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             } while (!stateVisibleToPlayer.AllDice.ContainsAll(heldDice));
         }
         DiceKept?.Invoke(this, new DiceRolledEventArgs(player, heldDice));
-        return new TurnState.RollTurnState(stateVisibleToPlayer.ThrowCount, stateVisibleToPlayer.LastRoll, heldDice );
+        return new TurnState.RollTurnState(stateVisibleToPlayer.ThrowCount, stateVisibleToPlayer.LastRoll, heldDice);
     }
 
     internal IList<DieRoll> DoRoll(TurnState.RollTurnState turnState, Random random)

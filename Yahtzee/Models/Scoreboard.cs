@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Yahtzee.EventHandler;
 using Yahtzee.Models.Rules;
 using static Yahtzee.Models.Scoreboard;
 
@@ -7,7 +8,7 @@ namespace Yahtzee.Models;
 /// <summary>
 /// Models the scoreboard for a Yahtzee game.
 /// </summary>
-public class Scoreboard
+public class Scoreboard : INotifyScoreChanged
 {
     // We can't use a dictionary as order is important
     private readonly List<RuleWithScore> _rulesWithScores;
@@ -57,7 +58,8 @@ public class Scoreboard
     public void SetScore(IRule rule, Score score)
     {
         var index = _rulesWithScores.FindIndex(rs => Equals(rs.Rule, rule));
-        _rulesWithScores[index] = new RuleWithScore(rule, score);
+        var newRuleWithScore = _rulesWithScores[index] = new RuleWithScore(rule, score);
+        ScoreChanged?.Invoke(this, new ScoreChangedEventArgs(this, newRuleWithScore));
         UpdateDependantScores(index);
     }
 
@@ -88,9 +90,11 @@ public class Scoreboard
     {
         return _writer.Stringify(this);
     }
+
+    public event ScoreChangedEventHandler? ScoreChanged;
 }
 
-internal record class ScoreboardWriter(int RuleWidth, int ScoreWidth)
+internal record ScoreboardWriter(int RuleWidth, int ScoreWidth)
 {
     public string Stringify(Scoreboard scoreboard)
     {

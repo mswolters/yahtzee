@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Yahtzee.EventHandler;
 using Yahtzee.Models;
 using Yahtzee.Models.Rules;
 
@@ -15,6 +16,26 @@ internal class ConsolePlayer : IPlayablePlayer
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+
+    public Task StartGame(GameState state)
+    {
+        Console.WriteLine("Starting game");
+        state.Scoreboard.ScoreChanged += ScoreChanged;
+        return Task.CompletedTask;
+    }
+
+    public Task EndGame(GameState state)
+    {
+        Console.WriteLine("End of game");
+        state.Scoreboard.ScoreChanged -= ScoreChanged;
+        return Task.CompletedTask;
+    }
+
+    private static void ScoreChanged(object sender, ScoreChangedEventArgs args)
+    {
+        Console.WriteLine($"Score changed: {args.ChangedScore.Rule.Name}: {args.ChangedScore.Score}");
+        Console.WriteLine(args.Board.ToString());
+    }
 
     public async Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state)
     {
