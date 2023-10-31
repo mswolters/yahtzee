@@ -8,6 +8,8 @@ namespace Yahtzee.Tests.Mock;
 internal class MockPlayer : IPlayablePlayer
 {
     public string Name { get => "MockPlayer"; set => throw new NotImplementedException(); }
+    public bool StartGameWasCalled { get; set; }
+    public bool EndGameWasCalled { get; set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -21,6 +23,18 @@ internal class MockPlayer : IPlayablePlayer
     public void PickRuleIndex(int index)
     {
         _pickRuleIndex = index;
+    }
+
+    public Task StartGame(GameState state)
+    {
+        StartGameWasCalled = true;
+        return Task.CompletedTask;
+    }
+
+    public Task EndGame(GameState state)
+    {
+        EndGameWasCalled = true;
+        return Task.CompletedTask;
     }
 
     public Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state)
