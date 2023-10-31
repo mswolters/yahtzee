@@ -5,7 +5,7 @@ internal class SumRule : Rule, IDependOnRules
 
     public int[] DependsOnIndices { get; }
 
-    public SumRule(string nameIndex, string descriptionIndex, params int[] dependantRulesIndices) : base(nameIndex, descriptionIndex)
+    public SumRule(RuleId id, string nameIndex, string descriptionIndex, params int[] dependantRulesIndices) : base(id, nameIndex, descriptionIndex)
     {
         DependsOnIndices = dependantRulesIndices;
     }

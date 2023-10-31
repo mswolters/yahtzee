@@ -8,7 +8,7 @@ internal class TopConditionRule : Rule, IDependOnRules
     public int MinimumScore { get; }
     public int BonusScore { get; }
 
-    public TopConditionRule(int ruleIndex, int minimumScore = 65, int bonusScore = 35) : base("RuleNameTopBonus", "RuleDescriptionTopBonus")
+    public TopConditionRule(RuleId id, int ruleIndex, int minimumScore = 65, int bonusScore = 35) : base(id, "RuleNameTopBonus", "RuleDescriptionTopBonus")
     {
         RuleIndex = ruleIndex;
         MinimumScore = minimumScore;

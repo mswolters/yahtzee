@@ -5,7 +5,7 @@ internal class TopRule : Rule
 
     public DieRoll Roll { get; }
 
-    public TopRule(DieRoll roll) : base($"RuleName{roll}s", $"RuleDescription{roll}s")
+    public TopRule(RuleId id, DieRoll roll) : base(id, $"RuleName{roll}s", $"RuleDescription{roll}s")
     {
         Roll = roll;
     }

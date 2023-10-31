@@ -2,6 +2,7 @@
 
 public interface IRule
 {
+    public RuleId Id { get; }
     public string Name { get; }
     public string Description { get; }
 
@@ -12,6 +13,7 @@ public interface IRule
 
 public abstract class Rule : IRule
 {
+    public RuleId Id { get; }
     private readonly string _nameIndex;
     private readonly string _descriptionIndex;
 
@@ -32,10 +34,11 @@ public abstract class Rule : IRule
         return HashCode.Combine(_nameIndex, _descriptionIndex);
     }
 
-    protected Rule(string nameIndex, string descriptionIndex)
+    protected Rule(RuleId id, string nameIndex, string descriptionIndex)
     {
         _nameIndex = nameIndex;
         _descriptionIndex = descriptionIndex;
+        Id = id;
     }
 }
 
@@ -43,3 +46,5 @@ public interface IDependOnRules : IRule
 {
     public int[] DependsOnIndices { get; }
 }
+
+public record struct RuleId(string Value);

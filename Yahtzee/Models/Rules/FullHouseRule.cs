@@ -2,7 +2,7 @@
 
 internal class FullHouseRule : Rule
 {
-    public FullHouseRule() : base("RuleNameFullHouse", "RuleDescriptionFullHouse")
+    public FullHouseRule(RuleId id) : base(id, "RuleNameFullHouse", "RuleDescriptionFullHouse")
     {
     }
 

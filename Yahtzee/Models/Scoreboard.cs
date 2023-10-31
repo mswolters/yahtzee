@@ -64,6 +64,7 @@ public class Scoreboard : INotifyScoreChanged
     }
 
     public RuleWithScore this[int index] => _rulesWithScores[index];
+    public RuleWithScore this[RuleId index] => _rulesWithScores.Find(rs => rs.Rule.Id == index);
 
     public Score this[IRule key]
     {

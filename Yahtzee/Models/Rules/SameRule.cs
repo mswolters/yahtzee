@@ -5,7 +5,7 @@ internal class SameRule : Rule
     public int Number { get; }
 
 
-    public SameRule(int number) : base($"RuleNameSame{number}", $"RuleDescriptionSame{number}")
+    public SameRule(RuleId id, int number) : base(id, $"RuleNameSame{number}", $"RuleDescriptionSame{number}")
     {
         Number = number;
     }

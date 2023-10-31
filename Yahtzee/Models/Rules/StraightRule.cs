@@ -5,7 +5,7 @@ internal class StraightRule : Rule
     public int Length { get; }
     public int Value { get; }
 
-    public StraightRule(int length, int value) : base($"RuleNameStraight{length}", $"RuleDescriptionStraight{length}")
+    public StraightRule(RuleId id, int length, int value) : base(id, $"RuleNameStraight{length}", $"RuleDescriptionStraight{length}")
     {
         Length = length;
         Value = value;

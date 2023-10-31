@@ -11,7 +11,7 @@ internal static class Scorer
         get
         {
             _defaultBoard ??= BuildDefaultBoard();
-            return new Scoreboard(_defaultBoard);
+            return new(_defaultBoard);
         }
     }
 
@@ -21,27 +21,28 @@ internal static class Scorer
         List<Rule> topRules = new();
         for (var top = 1; top <= 6; top++)
         {
-            AddToListAndBoard(new TopRule(new DieRoll(top)), topRules, board);
+            var roll = new DieRoll(top);
+            AddToListAndBoard(new TopRule(TopRuleId(roll), roll), topRules, board);
         }
-        Rule topSum = new SumRule("RuleNameTopSubsum", "RuleDescriptionTopSubsum", board.Rules.ToList().IndicesOf(topRules).ToArray());
+        Rule topSum = new SumRule(TopSubSumRuleId,"RuleNameTopSubsum", "RuleDescriptionTopSubsum", board.Rules.ToList().IndicesOf(topRules).ToArray());
         board.AddRule(topSum);
-        Rule topBonus = new TopConditionRule(board.Rules.ToList().IndexOf(topSum), 65, 35);
+        Rule topBonus = new TopConditionRule(TopBonusRuleId, board.Rules.ToList().IndexOf(topSum), 65, 35);
         board.AddRule(topBonus);
-        Rule topTotalSum = new SumRule("RuleNameTopSum", "RuleDescriptionTopSum", board.Rules.ToList().IndicesOf(topSum, topBonus).ToArray());
+        Rule topTotalSum = new SumRule(TopSumRuleId,"RuleNameTopSum", "RuleDescriptionTopSum", board.Rules.ToList().IndicesOf(topSum, topBonus).ToArray());
         board.AddRule(topTotalSum);
 
         List<Rule> bottomRules = new();
-        AddToListAndBoard(new SameRule(3), bottomRules, board);
-        AddToListAndBoard(new SameRule(4), bottomRules, board);
-        AddToListAndBoard(new FullHouseRule(), bottomRules, board);
-        AddToListAndBoard(new StraightRule(4, 30), bottomRules, board);
-        AddToListAndBoard(new StraightRule(5, 40), bottomRules, board);
-        AddToListAndBoard(new YahtzeeRule(), bottomRules, board);
-        AddToListAndBoard(new ChanceRule(), bottomRules, board);
-        Rule bottomSum = new SumRule("RuleNameBottomSum", "RuleDescriptionBottomSum", board.Rules.ToList().IndicesOf(bottomRules).ToArray());
+        AddToListAndBoard(new SameRule(SameRuleId(3), 3), bottomRules, board);
+        AddToListAndBoard(new SameRule(SameRuleId(4), 4), bottomRules, board);
+        AddToListAndBoard(new FullHouseRule(FullHouseRuleId), bottomRules, board);
+        AddToListAndBoard(new StraightRule(StraightRuleId(4), 4, 30), bottomRules, board);
+        AddToListAndBoard(new StraightRule(StraightRuleId(5), 5, 40), bottomRules, board);
+        AddToListAndBoard(new YahtzeeRule(YahtzeeRuleId), bottomRules, board);
+        AddToListAndBoard(new ChanceRule(ChanceRuleId), bottomRules, board);
+        Rule bottomSum = new SumRule(BottomSumRuleId,"RuleNameBottomSum", "RuleDescriptionBottomSum", board.Rules.ToList().IndicesOf(bottomRules).ToArray());
         board.AddRule(bottomSum);
 
-        Rule totalSum = new SumRule("RuleNameSum", "RuleDescriptionSum", board.Rules.ToList().IndicesOf(topTotalSum, bottomSum).ToArray());
+        Rule totalSum = new SumRule(SumRuleId,"RuleNameSum", "RuleDescriptionSum", board.Rules.ToList().IndicesOf(topTotalSum, bottomSum).ToArray());
         board.AddRule(totalSum);
 
         return board;
@@ -52,4 +53,16 @@ internal static class Scorer
         list.Add(rule);
         board.AddRule(rule);
     }
+
+    public static RuleId TopRuleId(DieRoll roll) => new($"TOP{roll.Value}");
+    public static RuleId TopSubSumRuleId = new("TOPSUBUSUM");
+    public static RuleId TopBonusRuleId = new("TOPBONUS");
+    public static RuleId TopSumRuleId = new("TOPUSUM");
+    public static RuleId SameRuleId(int number) => new($"SAME{number}");
+    public static RuleId FullHouseRuleId = new("FULLHOUSE");
+    public static RuleId StraightRuleId(int length) => new($"STRAIGHT{length}");
+    public static RuleId YahtzeeRuleId = new("YAHTZEE");
+    public static RuleId ChanceRuleId = new("CHANCE");
+    public static RuleId BottomSumRuleId = new("BOTTOMSUM");
+    public static RuleId SumRuleId = new("SUM");
 }

@@ -16,7 +16,7 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
     public int DicePerThrow { get; }
     public int SidesPerDie { get; }
     
-    public bool HasEnded => Scoreboard.RulesWithScores.Last().Score.Written;
+    public bool HasEnded => Scoreboard[Scorer.SumRuleId].Score.Written;
 
     public GameState(int throwsPerTurn = 3, int dicePerThrow = 5, int sidesPerDie = 6)
     {
