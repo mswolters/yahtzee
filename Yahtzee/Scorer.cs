@@ -27,7 +27,7 @@ internal static class Scorer
 
         Rule topSum = new SumRule("RuleNameTopSubsum", "RuleDescriptionTopSubsum", topRules.ToArray());
         board.AddRule(TopSubSumRuleId, topSum);
-        Rule topBonus = new TopConditionRule(TopSumRuleId, 65, 35);
+        Rule topBonus = new TopConditionRule(TopSubSumRuleId, 65, 35);
         board.AddRule(TopBonusRuleId, topBonus);
         Rule topTotalSum = new SumRule("RuleNameTopSum", "RuleDescriptionTopSum", TopSubSumRuleId, TopBonusRuleId);
         board.AddRule(TopSumRuleId, topTotalSum);
@@ -56,9 +56,9 @@ internal static class Scorer
     }
 
     public static RuleId TopRuleId(DieRoll roll) => new($"TOP{roll.Value}");
-    public static RuleId TopSubSumRuleId = new("TOPSUBUSUM");
+    public static RuleId TopSubSumRuleId = new("TOPSUBSUM");
     public static RuleId TopBonusRuleId = new("TOPBONUS");
-    public static RuleId TopSumRuleId = new("TOPUSUM");
+    public static RuleId TopSumRuleId = new("TOPSUM");
     public static RuleId SameRuleId(int number) => new($"SAME{number}");
     public static RuleId FullHouseRuleId = new("FULLHOUSE");
     public static RuleId StraightRuleId(int length) => new($"STRAIGHT{length}");
