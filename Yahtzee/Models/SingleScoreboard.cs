@@ -18,6 +18,14 @@ public class SingleScoreboard : INotifyScoreChanged
         _rulesWithScores = new List<RuleWithScore>();
     }
 
+    public SingleScoreboard(IEnumerable<IdRule> rules)
+    {
+        _rulesWithScores =
+            new List<RuleWithScore>(rules.Select(idRule =>
+                new RuleWithScore(idRule.Id, idRule.Rule, new Score(0, false))
+            ));
+    }
+
     public SingleScoreboard(IEnumerable<RuleWithScore> rules)
     {
         _rulesWithScores = new List<RuleWithScore>(rules);
@@ -28,27 +36,13 @@ public class SingleScoreboard : INotifyScoreChanged
         _rulesWithScores = new List<RuleWithScore>(copy.RulesWithScores);
     }
 
-    public readonly record struct RuleWithScore(RuleId Id, IRule Rule, Score Score)
-    {
-        internal static RuleWithScore DefaultForRule(RuleId id, IRule rule)
-        {
-            return new RuleWithScore(id, rule, new Score(0, false));
-        }
-    }
+    public readonly record struct IdRule(RuleId Id, IRule Rule);
 
-    public Score ScoreForRule(IRule rule)
-    {
-        return _rulesWithScores.Where(rs => Equals(rs.Rule, rule)).Select(rs => rs.Score).First();
-    }
+    public readonly record struct RuleWithScore(RuleId Id, IRule Rule, Score Score);
 
     public IList<IRule> Rules => _rulesWithScores.Select(rs => rs.Rule).ToList();
 
     public IList<RuleWithScore> RulesWithScores => new List<RuleWithScore>(_rulesWithScores);
-
-    public void AddRule(RuleId id, IRule rule)
-    {
-        _rulesWithScores.Add(RuleWithScore.DefaultForRule(id, rule));
-    }
 
     public void SetScore(RuleId id, Score score)
     {
@@ -78,6 +72,7 @@ public class SingleScoreboard : INotifyScoreChanged
                 {
                     return d.DependsOnIds.Contains(id);
                 }
+
                 return false;
             })
             .Select(rs => rs.Id)

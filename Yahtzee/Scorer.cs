@@ -17,42 +17,44 @@ internal static class Scorer
 
     private static SingleScoreboard BuildDefaultBoard()
     {
-        SingleScoreboard board = new();
-        List<RuleId> topRules = new();
+        List<SingleScoreboard.IdRule> rules = new(); 
+        
+        List<RuleId> topRuleIds = new();
         for (var top = 1; top <= 6; top++)
         {
             var roll = new DieRoll(top);
-            AddToListAndBoard(TopRuleId(new DieRoll(top)), new TopRule(roll), topRules, board);
+            AddToList(TopRuleId(new DieRoll(top)), new TopRule(roll), rules, topRuleIds);
         }
 
-        Rule topSum = new SumRule("RuleNameTopSubsum", "RuleDescriptionTopSubsum", topRules.ToArray());
-        board.AddRule(TopSubSumRuleId, topSum);
+        Rule topSum = new SumRule("RuleNameTopSubsum", "RuleDescriptionTopSubsum", topRuleIds.ToArray());
+        AddToList(TopSubSumRuleId, topSum, rules);
         Rule topBonus = new TopConditionRule(TopSubSumRuleId, 65, 35);
-        board.AddRule(TopBonusRuleId, topBonus);
+        AddToList(TopBonusRuleId, topBonus, rules);
         Rule topTotalSum = new SumRule("RuleNameTopSum", "RuleDescriptionTopSum", TopSubSumRuleId, TopBonusRuleId);
-        board.AddRule(TopSumRuleId, topTotalSum);
+        AddToList(TopSumRuleId, topTotalSum, rules);
 
         List<RuleId> bottomRules = new();
-        AddToListAndBoard(SameRuleId(3), new SameRule(3), bottomRules, board);
-        AddToListAndBoard(SameRuleId(4), new SameRule(4), bottomRules, board);
-        AddToListAndBoard(FullHouseRuleId, new FullHouseRule(), bottomRules, board);
-        AddToListAndBoard(StraightRuleId(4), new StraightRule(4, 30), bottomRules, board);
-        AddToListAndBoard(StraightRuleId(5), new StraightRule(5, 40), bottomRules, board);
-        AddToListAndBoard(YahtzeeRuleId, new YahtzeeRule(), bottomRules, board);
-        AddToListAndBoard(ChanceRuleId, new ChanceRule(), bottomRules, board);
+        AddToList(SameRuleId(3), new SameRule(3), rules, bottomRules);
+        AddToList(SameRuleId(4), new SameRule(4), rules, bottomRules);
+        AddToList(FullHouseRuleId, new FullHouseRule(), rules, bottomRules);
+        AddToList(StraightRuleId(4), new StraightRule(4, 30), rules, bottomRules);
+        AddToList(StraightRuleId(5), new StraightRule(5, 40), rules, bottomRules);
+        AddToList(YahtzeeRuleId, new YahtzeeRule(), rules, bottomRules);
+        AddToList(ChanceRuleId, new ChanceRule(), rules, bottomRules);
         Rule bottomSum = new SumRule("RuleNameBottomSum", "RuleDescriptionBottomSum", bottomRules.ToArray());
-        board.AddRule(BottomSumRuleId, bottomSum);
+        AddToList(BottomSumRuleId, bottomSum, rules);
 
         Rule totalSum = new SumRule("RuleNameSum", "RuleDescriptionSum",  TopSumRuleId, BottomSumRuleId);
-        board.AddRule(SumRuleId, totalSum);
+        AddToList(SumRuleId, totalSum, rules);
 
+        SingleScoreboard board = new(rules);
         return board;
     }
 
-    private static void AddToListAndBoard(RuleId id, Rule rule, List<RuleId> list, SingleScoreboard board)
+    private static void AddToList(RuleId id, IRule rule, List<SingleScoreboard.IdRule> list, List<RuleId>? idList = null)
     {
-        list.Add(id);
-        board.AddRule(id, rule);
+        list.Add(new SingleScoreboard.IdRule(id, rule));
+        idList?.Add(id);
     }
 
     public static RuleId TopRuleId(DieRoll roll) => new($"TOP{roll.Value}");
