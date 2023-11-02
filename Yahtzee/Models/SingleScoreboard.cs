@@ -52,15 +52,6 @@ public class SingleScoreboard : INotifyScoreChanged
         UpdateDependantScores(id);
     }
 
-    public void SetScore(IRule rule, Score score)
-    {
-        var index = _rulesWithScores.FindIndex(rs => Equals(rs.Rule, rule));
-        var oldRuleWithScore = _rulesWithScores[index];
-        var newRuleWithScore = _rulesWithScores[index] = oldRuleWithScore with { Score = score };
-        ScoreChanged?.Invoke(this, new ScoreChangedEventArgs(this, newRuleWithScore));
-        UpdateDependantScores(oldRuleWithScore.Id);
-    }
-
     public RuleWithScore this[int index] => _rulesWithScores[index];
     public RuleWithScore this[RuleId index] => _rulesWithScores.Find(rs => rs.Id == index);
 

@@ -117,7 +117,7 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         var relevantTopRule = SingleScoreboard[Scorer.TopRuleId(finalKeptDice[0])];
         if (!relevantTopRule.Score.Written)
         {
-            SingleScoreboard.SetScore(relevantTopRule.Rule, new Score(total));
+            SingleScoreboard.SetScore(relevantTopRule.Id, new Score(total));
             return true;
         }
         
