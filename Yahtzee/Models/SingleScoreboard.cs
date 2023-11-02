@@ -1,29 +1,29 @@
 ﻿using System.Text;
 using Yahtzee.EventHandler;
 using Yahtzee.Models.Rules;
-using static Yahtzee.Models.Scoreboard;
+using static Yahtzee.Models.SingleScoreboard;
 
 namespace Yahtzee.Models;
 
 /// <summary>
 /// Models the scoreboard for a Yahtzee game.
 /// </summary>
-public class Scoreboard : INotifyScoreChanged
+public class SingleScoreboard : INotifyScoreChanged
 {
     // We can't use a dictionary as order is important
     private readonly List<RuleWithScore> _rulesWithScores;
 
-    public Scoreboard()
+    public SingleScoreboard()
     {
         _rulesWithScores = new List<RuleWithScore>();
     }
 
-    public Scoreboard(IEnumerable<RuleWithScore> rules)
+    public SingleScoreboard(IEnumerable<RuleWithScore> rules)
     {
         _rulesWithScores = new List<RuleWithScore>(rules);
     }
 
-    public Scoreboard(Scoreboard copy)
+    public SingleScoreboard(SingleScoreboard copy)
     {
         _rulesWithScores = new List<RuleWithScore>(copy.RulesWithScores);
     }
@@ -106,7 +106,7 @@ public class Scoreboard : INotifyScoreChanged
 
 internal record ScoreboardWriter(int RuleWidth, int ScoreWidth)
 {
-    public string Stringify(Scoreboard scoreboard)
+    public string Stringify(SingleScoreboard singleScoreboard)
     {
         var sb = new StringBuilder();
         sb.Append('|');
@@ -116,7 +116,7 @@ internal record ScoreboardWriter(int RuleWidth, int ScoreWidth)
         sb.Append('|');
         sb.AppendLine();
 
-        foreach (var rs in scoreboard.RulesWithScores)
+        foreach (var rs in singleScoreboard.RulesWithScores)
         {
             AppendRuleWithScore(sb, rs);
         }

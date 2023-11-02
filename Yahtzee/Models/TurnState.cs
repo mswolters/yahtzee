@@ -12,7 +12,7 @@ internal abstract record TurnState
 
     internal record PickRuleTurnState
         (
-            Scoreboard Scoreboard, 
+            SingleScoreboard SingleScoreboard, 
             IList<DieRoll> KeptDice, 
             PickRuleTurnState.YahtzeeSpecialPickMode YahtzeeSpecialPick = PickRuleTurnState.YahtzeeSpecialPickMode.None
             ) : TurnState

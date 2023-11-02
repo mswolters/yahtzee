@@ -45,6 +45,6 @@ internal class MockPlayer : IPlayablePlayer
 
     public Task<RuleId> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
-        return Task.FromResult(state.Scoreboard.RulesWithScores.ElementAt(_pickRuleIndex).Id);
+        return Task.FromResult(state.SingleScoreboard.RulesWithScores.ElementAt(_pickRuleIndex).Id);
     }
 }

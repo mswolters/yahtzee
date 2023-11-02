@@ -12,7 +12,7 @@ public class ScoreBoardTests
     [TestMethod]
     public void SumRuleIsUpdatedWhenOtherRuleIsUpdated()
     {
-        var scoreboard = new Scoreboard(new List<Scoreboard.RuleWithScore>
+        var scoreboard = new SingleScoreboard(new List<SingleScoreboard.RuleWithScore>
         {
             new(TopRuleId, new TopRule(new DieRoll(1)), new Score()), 
             new(SumRuleId, new SumRule("", "", SumRuleId), new Score()),

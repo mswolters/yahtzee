@@ -20,14 +20,14 @@ internal class ConsolePlayer : IPlayablePlayer
     public Task StartGame(GameState state)
     {
         Console.WriteLine("Starting game");
-        state.Scoreboard.ScoreChanged += ScoreChanged;
+        state.SingleScoreboard.ScoreChanged += ScoreChanged;
         return Task.CompletedTask;
     }
 
     public Task EndGame(GameState state)
     {
         Console.WriteLine("End of game");
-        state.Scoreboard.ScoreChanged -= ScoreChanged;
+        state.SingleScoreboard.ScoreChanged -= ScoreChanged;
         return Task.CompletedTask;
     }
 
@@ -76,7 +76,7 @@ internal class ConsolePlayer : IPlayablePlayer
     public async Task<RuleId> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
         Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PickRuleToApply_Current_scores);
-        Console.WriteLine(state.Scoreboard.ToString());
+        Console.WriteLine(state.SingleScoreboard.ToString());
 
         PrintRolls(state.KeptDice, null);
         
@@ -87,10 +87,10 @@ internal class ConsolePlayer : IPlayablePlayer
             Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PickRuleToApply_Pick_a_0_indexed_rule_to_apply);
             var picked = await AsyncConsole.ReadLineAsync();
             var result = TryParse(picked);
-            success = result is { Success: true, Value: >= 0 } && result.Value < state.Scoreboard.RulesWithScores.Count;
+            success = result is { Success: true, Value: >= 0 } && result.Value < state.SingleScoreboard.RulesWithScores.Count;
             if (success) selectedRuleIndex = result.Value;
         }
-        return state.Scoreboard[selectedRuleIndex].Id;
+        return state.SingleScoreboard[selectedRuleIndex].Id;
     }
 
     private static void PrintRolls(IList<DieRoll> keptRolls, IList<DieRoll>? newRolls)

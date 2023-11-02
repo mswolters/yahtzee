@@ -11,7 +11,7 @@ internal class StraightRule : Rule
         Value = value;
     }
 
-    public override Score Score(IList<DieRoll> rolls, Scoreboard board)
+    public override Score Score(IList<DieRoll> rolls, SingleScoreboard board)
     {
         var orderedDistinctRolls = rolls.OrderBy(roll => roll.Value).Distinct();
         var maxOrderLength = 1;

@@ -10,7 +10,7 @@ internal class SumRule : Rule, IDependOnRules
         DependsOnIds = dependantRulesIndices;
     }
 
-    public override Score Score(IList<DieRoll> rolls, Scoreboard board)
+    public override Score Score(IList<DieRoll> rolls, SingleScoreboard board)
     {   
         return DependsOnIds.Select(i => board[i].Score).Sum();
     }

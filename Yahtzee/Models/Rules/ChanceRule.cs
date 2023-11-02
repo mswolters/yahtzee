@@ -6,7 +6,7 @@ internal class ChanceRule : Rule
     {
     }
 
-    public override Score Score(IList<DieRoll> rolls, Scoreboard board) => new(rolls.Sum(roll => roll.Value));
+    public override Score Score(IList<DieRoll> rolls, SingleScoreboard board) => new(rolls.Sum(roll => roll.Value));
     public override bool Equals(object? obj)
     {
         return obj is ChanceRule &&

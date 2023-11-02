@@ -10,7 +10,7 @@ internal class TopRule : Rule
         Roll = roll;
     }
 
-    public override Score Score(IList<DieRoll> rolls, Scoreboard board) => new(rolls.Where(x => x == Roll).Sum(x => x.Value));
+    public override Score Score(IList<DieRoll> rolls, SingleScoreboard board) => new(rolls.Where(x => x == Roll).Sum(x => x.Value));
 
     public override bool Equals(object? obj)
     {

@@ -10,7 +10,7 @@ internal class SameRule : Rule
         Number = number;
     }
 
-    public override Score Score(IList<DieRoll> rolls, Scoreboard board)
+    public override Score Score(IList<DieRoll> rolls, SingleScoreboard board)
     {
         if (rolls.GroupBy(roll => roll.Value).Any(rollOfNumber => rollOfNumber.Count() >= Number))
         {

@@ -15,7 +15,7 @@ internal class TopConditionRule : Rule, IDependOnRules
         BonusScore = bonusScore;
     }
 
-    public override Score Score(IList<DieRoll> rolls, Scoreboard board)
+    public override Score Score(IList<DieRoll> rolls, SingleScoreboard board)
     {
         var otherScore = board[RuleIndex].Score;
         return otherScore with { Value = otherScore.Value >= MinimumScore ? BonusScore : 0 };

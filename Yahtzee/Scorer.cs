@@ -5,8 +5,8 @@ namespace Yahtzee;
 
 internal static class Scorer
 {
-    private static Scoreboard? _defaultBoard = null;
-    internal static Scoreboard DefaultBoard
+    private static SingleScoreboard? _defaultBoard = null;
+    internal static SingleScoreboard DefaultBoard
     {
         get
         {
@@ -15,9 +15,9 @@ internal static class Scorer
         }
     }
 
-    private static Scoreboard BuildDefaultBoard()
+    private static SingleScoreboard BuildDefaultBoard()
     {
-        Scoreboard board = new();
+        SingleScoreboard board = new();
         List<RuleId> topRules = new();
         for (var top = 1; top <= 6; top++)
         {
@@ -49,7 +49,7 @@ internal static class Scorer
         return board;
     }
 
-    private static void AddToListAndBoard(RuleId id, Rule rule, List<RuleId> list, Scoreboard board)
+    private static void AddToListAndBoard(RuleId id, Rule rule, List<RuleId> list, SingleScoreboard board)
     {
         list.Add(id);
         board.AddRule(id, rule);

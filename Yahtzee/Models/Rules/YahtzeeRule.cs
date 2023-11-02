@@ -6,7 +6,7 @@ internal class YahtzeeRule : Rule
     {
     }
 
-    public override Score Score(IList<DieRoll> rolls, Scoreboard board)
+    public override Score Score(IList<DieRoll> rolls, SingleScoreboard board)
     {
         if (rolls.GroupBy(roll => roll.Value).Count() == 1)
         {

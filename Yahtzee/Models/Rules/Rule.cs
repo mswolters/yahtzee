@@ -7,7 +7,7 @@ public interface IRule
 
     public bool IsPlayerWritable => this is not IDependOnRules;
     
-    public Score Score(IList<DieRoll> rolls, Scoreboard board);
+    public Score Score(IList<DieRoll> rolls, SingleScoreboard board);
 }
 
 public abstract class Rule : IRule
@@ -18,7 +18,7 @@ public abstract class Rule : IRule
     public string Name => Strings.ResourceManager.GetString(_nameIndex, Strings.Culture)!;
 
     public string Description => Strings.ResourceManager.GetString(_descriptionIndex, Strings.Culture)!;
-    public abstract Score Score(IList<DieRoll> rolls, Scoreboard board);
+    public abstract Score Score(IList<DieRoll> rolls, SingleScoreboard board);
 
     public override bool Equals(object? obj)
     {

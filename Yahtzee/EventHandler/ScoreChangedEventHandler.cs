@@ -11,12 +11,12 @@ public delegate void ScoreChangedEventHandler(object sender, ScoreChangedEventAr
 
 public class ScoreChangedEventArgs : EventArgs
 {
-    public ScoreChangedEventArgs(Scoreboard board, Scoreboard.RuleWithScore changedScore)
+    public ScoreChangedEventArgs(SingleScoreboard board, SingleScoreboard.RuleWithScore changedScore)
     {
         Board = board;
         ChangedScore = changedScore;
     }
 
-    public Scoreboard Board { get; }
-    public Scoreboard.RuleWithScore ChangedScore { get; }
+    public SingleScoreboard Board { get; }
+    public SingleScoreboard.RuleWithScore ChangedScore { get; }
 }
