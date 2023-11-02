@@ -115,5 +115,5 @@ internal class ConsolePlayer : IPlayablePlayer
         }
     }
 
-    private record struct ParseResult(bool Success, int Value);
+    private readonly record struct ParseResult(bool Success, int Value);
 }

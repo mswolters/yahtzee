@@ -2,6 +2,7 @@
 using Yahtzee.Models;
 using Yahtzee.Models.Rules;
 using Yahtzee.Players;
+using static Yahtzee.Models.TurnState.PickRuleTurnState.YahtzeeSpecialPickMode;
 
 namespace Yahtzee;
 
@@ -44,8 +45,11 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             turnState = await DoPartialTurn(turnState, player, random);
         }
 
-        // TODO special case rule selection
-        CheckAndExecuteYahtzeeSpecialCase(turnState.KeptDice);
+        var yahtzeeSpecialCaseHasBeenApplied = await CheckAndExecuteYahtzeeSpecialCase(player, turnState.KeptDice);
+        if (yahtzeeSpecialCaseHasBeenApplied)
+        {
+            return;
+        }
         
         RuleId appliedRuleId;
         Scoreboard.RuleWithScore appliedRule;
@@ -94,7 +98,7 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         return dice.Select(die => die.Roll(random)).ToList();
     }
     
-    private bool CheckAndExecuteYahtzeeSpecialCase(IList<DieRoll> finalKeptDice)
+    private async Task<bool> CheckAndExecuteYahtzeeSpecialCase(IPlayablePlayer player, IList<DieRoll> finalKeptDice)
     {
         var yahtzee = Scoreboard[Scorer.YahtzeeRuleId];
         // No need to check anything when yahtzee isn't rolled
@@ -106,10 +110,17 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         
         // Woohoo, bonus!
         Scoreboard.SetScore(Scorer.YahtzeeRuleId, yahtzee.Score with { Value = yahtzee.Score.Value + 100 });
-        return true;
 
-        //TODO: Special case rule selection
         // Score the total of all 5 dice in the appropriate Upper Section box.
+
+        var total = finalKeptDice.Sum(roll => roll.Value);
+        var relevantTopRule = Scoreboard[Scorer.TopRuleId(finalKeptDice[0])];
+        if (!relevantTopRule.Score.Written)
+        {
+            Scoreboard.SetScore(relevantTopRule.Rule, new Score(total));
+            return true;
+        }
+        
         // If this box has already been filled in, score as follows in any open Lower Section box:
         // 3/4 of a kind: total of all 5 dice
         // Full House: 25
@@ -119,7 +130,45 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
 
         // If the appropriate Upper Section box and all Lower Section boxes are
         // all filled in, you must enter a zero in any Upper Section box.
+        
+        var pickMode = Scoreboard[Scorer.BottomSumRuleId].Score.Written ? Top : Bottom;
 
+        RuleId appliedRuleId;
+        Scoreboard.RuleWithScore appliedRule;
+        do
+        {
+            // Players are only allowed to pick rules which are playerWritable and which don't have a score yet.
+            appliedRuleId = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, finalKeptDice, pickMode));
+            appliedRule = Scoreboard[appliedRuleId];
+        } while (!appliedRule.Rule.IsPlayerWritable || appliedRule.Score.Written || !RuleFitsPickMode(appliedRule, pickMode));
+
+        if (pickMode == Top)
+        {
+            Scoreboard.SetScore(appliedRuleId, new Score(0));
+        }
+        else
+        {
+            int scoreValue;
+            if (appliedRuleId == Scorer.FullHouseRuleId) scoreValue = 25;
+            else if (appliedRuleId == Scorer.StraightRuleId(4)) scoreValue = 30;
+            else if (appliedRuleId == Scorer.StraightRuleId(5)) scoreValue = 40;
+            else scoreValue = total;
+            Scoreboard.SetScore(appliedRuleId, new Score(scoreValue));
+        }
+
+        return true;
+
+    }
+
+    private bool RuleFitsPickMode(Scoreboard.RuleWithScore rule, TurnState.PickRuleTurnState.YahtzeeSpecialPickMode pickMode)
+    {
+        return pickMode switch
+        {
+            None => true,
+            Bottom => ((IDependOnRules)Scoreboard[Scorer.BottomSumRuleId].Rule).DependsOnIds.Contains(rule.Id),
+            Top => ((IDependOnRules)Scoreboard[Scorer.TopSubSumRuleId].Rule).DependsOnIds.Contains(rule.Id),
+            _ => throw new ArgumentOutOfRangeException(nameof(pickMode), pickMode, null)
+        };
     }
 
 }

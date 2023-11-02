@@ -44,4 +44,4 @@ public interface IDependOnRules : IRule
     public RuleId[] DependsOnIds { get; }
 }
 
-public record struct RuleId(string Value);
+public readonly record struct RuleId(string Value);

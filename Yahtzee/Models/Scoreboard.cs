@@ -28,7 +28,7 @@ public class Scoreboard : INotifyScoreChanged
         _rulesWithScores = new List<RuleWithScore>(copy.RulesWithScores);
     }
 
-    public record struct RuleWithScore(RuleId Id, IRule Rule, Score Score)
+    public readonly record struct RuleWithScore(RuleId Id, IRule Rule, Score Score)
     {
         internal static RuleWithScore DefaultForRule(RuleId id, IRule rule)
         {

@@ -10,6 +10,19 @@ internal abstract record TurnState
         public IEnumerable<DieRoll> AllDice => LastRoll.Concat(KeptDice);
     }
 
-    internal record PickRuleTurnState(Scoreboard Scoreboard, IList<DieRoll> KeptDice) : TurnState;
+    internal record PickRuleTurnState
+        (
+            Scoreboard Scoreboard, 
+            IList<DieRoll> KeptDice, 
+            PickRuleTurnState.YahtzeeSpecialPickMode YahtzeeSpecialPick = PickRuleTurnState.YahtzeeSpecialPickMode.None
+            ) : TurnState
+    {
+        public enum YahtzeeSpecialPickMode
+        {
+            None,
+            Bottom,
+            Top
+        }
+    }
 
 }
