@@ -17,6 +17,6 @@ internal interface IPlayablePlayer : IPlayer
     public Task EndGame(GameState state);
     
     public Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state);
-    public Task<IRule> PickRuleToApply(TurnState.PickRuleTurnState state);
+    public Task<RuleId> PickRuleToApply(TurnState.PickRuleTurnState state);
 
 }

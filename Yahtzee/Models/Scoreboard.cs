@@ -18,21 +18,21 @@ public class Scoreboard : INotifyScoreChanged
         _rulesWithScores = new List<RuleWithScore>();
     }
 
-    public Scoreboard(IEnumerable<IRule> rules)
+    public Scoreboard(IEnumerable<RuleWithScore> rules)
     {
-        _rulesWithScores = rules.Select(RuleWithScore.DefaultForRule).ToList();
+        _rulesWithScores = new List<RuleWithScore>(rules);
     }
 
     public Scoreboard(Scoreboard copy)
     {
-        _rulesWithScores = copy.RulesWithScores.Select(rs => new RuleWithScore(rs.Rule, rs.Score)).ToList();
+        _rulesWithScores = new List<RuleWithScore>(copy.RulesWithScores);
     }
 
-    public record struct RuleWithScore(IRule Rule, Score Score)
+    public record struct RuleWithScore(RuleId Id, IRule Rule, Score Score)
     {
-        internal static RuleWithScore DefaultForRule(IRule rule)
+        internal static RuleWithScore DefaultForRule(RuleId id, IRule rule)
         {
-            return new RuleWithScore(rule, new Score(0, false));
+            return new RuleWithScore(id, rule, new Score(0, false));
         }
     }
 
@@ -45,44 +45,53 @@ public class Scoreboard : INotifyScoreChanged
 
     public IList<RuleWithScore> RulesWithScores => new List<RuleWithScore>(_rulesWithScores);
 
-    public void AddRule(IRule rule)
+    public void AddRule(RuleId id, IRule rule)
     {
-        _rulesWithScores.Add(RuleWithScore.DefaultForRule(rule));
+        _rulesWithScores.Add(RuleWithScore.DefaultForRule(id, rule));
     }
 
-    public void RemoveRule(IRule rule)
+    public void SetScore(RuleId id, Score score)
     {
-        _rulesWithScores.RemoveAll(rs => Equals(rs.Rule, rule));
+        var index = _rulesWithScores.FindIndex(rs => Equals(rs.Id, id));
+        var newRuleWithScore = _rulesWithScores[index] = new RuleWithScore(id, _rulesWithScores[index].Rule, score);
+        ScoreChanged?.Invoke(this, new ScoreChangedEventArgs(this, newRuleWithScore));
+        UpdateDependantScores(id);
     }
 
     public void SetScore(IRule rule, Score score)
     {
         var index = _rulesWithScores.FindIndex(rs => Equals(rs.Rule, rule));
-        var newRuleWithScore = _rulesWithScores[index] = new RuleWithScore(rule, score);
+        var oldRuleWithScore = _rulesWithScores[index];
+        var newRuleWithScore = _rulesWithScores[index] = oldRuleWithScore with { Score = score };
         ScoreChanged?.Invoke(this, new ScoreChangedEventArgs(this, newRuleWithScore));
-        UpdateDependantScores(index);
+        UpdateDependantScores(oldRuleWithScore.Id);
     }
 
     public RuleWithScore this[int index] => _rulesWithScores[index];
-    public RuleWithScore this[RuleId index] => _rulesWithScores.Find(rs => rs.Rule.Id == index);
+    public RuleWithScore this[RuleId index] => _rulesWithScores.Find(rs => rs.Id == index);
 
-    public Score this[IRule key]
+    private void UpdateDependantScores(RuleId id)
     {
-        get => ScoreForRule(key);
-        set => SetScore(key, value);
+        var rulesWhichDependOn = _rulesWithScores.Where(rs =>
+            {
+                if (rs.Rule is IDependOnRules d)
+                {
+                    return d.DependsOnIds.Contains(id);
+                }
+                return false;
+            })
+            .Select(rs => rs.Id)
+            .ToList();
+        foreach (var ruleIdOfDependant in rulesWhichDependOn)
+        {
+            Poke(ruleIdOfDependant);
+        }
     }
 
-    private void UpdateDependantScores(int index)
+    // Forces a score to reset to calculated value
+    private void Poke(RuleId id)
     {
-        var rulesWhichDependsOnIndex = _rulesWithScores
-            .Select(rs => rs.Rule)
-            .OfType<IDependOnRules>()
-            .Where(hasDependants => hasDependants.DependsOnIndices.Contains(index))
-            .ToList(); // Prevent modification of the underlying collection while enumerating by forcing the enumeration to run to the end
-        foreach (var ruleWhichDependsOnIndex in rulesWhichDependsOnIndex)
-        {
-            SetScore(ruleWhichDependsOnIndex, ruleWhichDependsOnIndex.Score(new List<DieRoll>(), this));
-        }
+        SetScore(id, this[id].Rule.Score(new List<DieRoll>(), this));
     }
 
     private readonly ScoreboardWriter _writer = new(16, 5);

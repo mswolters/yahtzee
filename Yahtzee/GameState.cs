@@ -47,13 +47,15 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         // TODO special case rule selection
         CheckAndExecuteYahtzeeSpecialCase(turnState.KeptDice);
         
-        IRule appliedRule;
+        RuleId appliedRuleId;
+        Scoreboard.RuleWithScore appliedRule;
         do
         {
             // Players are only allowed to pick rules which are playerWritable and which don't have a score yet.
-            appliedRule = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, turnState.KeptDice));
-        } while (!appliedRule.IsPlayerWritable || Scoreboard[appliedRule].Written);
-        Scoreboard.SetScore(appliedRule, appliedRule.Score(turnState.KeptDice, Scoreboard));
+            appliedRuleId = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, turnState.KeptDice));
+            appliedRule = Scoreboard[appliedRuleId];
+        } while (!appliedRule.Rule.IsPlayerWritable || appliedRule.Score.Written);
+        Scoreboard.SetScore(appliedRuleId, appliedRule.Rule.Score(turnState.KeptDice, Scoreboard));
     }
 
     internal async Task<TurnState.RollTurnState> DoPartialTurn(TurnState.RollTurnState turnState, IPlayablePlayer player, Random random)
@@ -103,7 +105,7 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         if (yahtzee.Score.Value == 0) return false;
         
         // Woohoo, bonus!
-        Scoreboard[yahtzee.Rule] = yahtzee.Score with { Value = yahtzee.Score.Value + 100 };
+        Scoreboard.SetScore(Scorer.YahtzeeRuleId, yahtzee.Score with { Value = yahtzee.Score.Value + 100 });
         return true;
 
         //TODO: Special case rule selection

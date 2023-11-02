@@ -2,7 +2,7 @@
 
 internal class ChanceRule : Rule
 {
-    public ChanceRule(RuleId id) : base(id, "RuleNameChance", "RuleDescriptionChance")
+    public ChanceRule() : base("RuleNameChance", "RuleDescriptionChance")
     {
     }
 

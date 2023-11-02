@@ -2,7 +2,7 @@
 
 internal class YahtzeeRule : Rule
 {
-    public YahtzeeRule(RuleId id) : base(id, "RuleNameYahtzee", "RuleDescriptionYahtzee")
+    public YahtzeeRule() : base("RuleNameYahtzee", "RuleDescriptionYahtzee")
     {
     }
 

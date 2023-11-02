@@ -73,7 +73,7 @@ internal class ConsolePlayer : IPlayablePlayer
     }
 
 
-    public async Task<IRule> PickRuleToApply(TurnState.PickRuleTurnState state)
+    public async Task<RuleId> PickRuleToApply(TurnState.PickRuleTurnState state)
     {
         Console.WriteLine(ConsolePlayerStrings.ConsolePlayer_PickRuleToApply_Current_scores);
         Console.WriteLine(state.Scoreboard.ToString());
@@ -90,7 +90,7 @@ internal class ConsolePlayer : IPlayablePlayer
             success = result is { Success: true, Value: >= 0 } && result.Value < state.Scoreboard.RulesWithScores.Count;
             if (success) selectedRuleIndex = result.Value;
         }
-        return state.Scoreboard[selectedRuleIndex].Rule;
+        return state.Scoreboard[selectedRuleIndex].Id;
     }
 
     private static void PrintRolls(IList<DieRoll> keptRolls, IList<DieRoll>? newRolls)
