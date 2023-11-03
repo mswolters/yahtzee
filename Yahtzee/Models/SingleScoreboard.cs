@@ -80,7 +80,7 @@ public class SingleScoreboard : INotifyScoreChanged
         SetScore(id, this[id].Rule.Score(new List<DieRoll>(), this));
     }
 
-    private readonly ScoreboardWriter _writer = new(16, 5);
+    private readonly SingleScoreboardWriter _writer = new(16, 5);
 
     public override string ToString()
     {
@@ -90,19 +90,19 @@ public class SingleScoreboard : INotifyScoreChanged
     public event ScoreChangedEventHandler? ScoreChanged;
 }
 
-internal record ScoreboardWriter(int RuleWidth, int ScoreWidth)
+internal record SingleScoreboardWriter(int RuleWidth, int ScoreWidth)
 {
-    public string Stringify(SingleScoreboard singleScoreboard)
+    public string Stringify(SingleScoreboard scoreboard)
     {
         var sb = new StringBuilder();
         sb.Append('|');
-        sb.Append(PadCenter("Name", RuleWidth));
+        sb.Append("Name".PadCenter(RuleWidth));
         sb.Append('|');
-        sb.Append(PadCenter("Score", ScoreWidth));
+        sb.Append("Score".PadCenter(ScoreWidth));
         sb.Append('|');
         sb.AppendLine();
 
-        foreach (var rs in singleScoreboard.RulesWithScores)
+        foreach (var rs in scoreboard.RulesWithScores)
         {
             AppendRuleWithScore(sb, rs);
         }
@@ -113,7 +113,7 @@ internal record ScoreboardWriter(int RuleWidth, int ScoreWidth)
     private void AppendRuleWithScore(StringBuilder sb, RuleWithScore rs)
     {
         sb.Append('|');
-        sb.Append(PadCenter(rs.Rule.Name, RuleWidth));
+        sb.Append(rs.Rule.Name.PadCenter(RuleWidth));
         sb.Append('|');
         sb.Append(ScoreString(rs.Score));
         sb.Append('|');
@@ -124,7 +124,7 @@ internal record ScoreboardWriter(int RuleWidth, int ScoreWidth)
     {
         if (score is { Value: 0, Written: false })
         {
-            return PadCenter("-", ScoreWidth);
+            return "-".PadCenter(ScoreWidth);
         }
 
         if (score.Written)
@@ -133,20 +133,6 @@ internal record ScoreboardWriter(int RuleWidth, int ScoreWidth)
         }
 
         return ("{" + score.Value + "}").PadLeft(ScoreWidth);
-    }
-
-    private static string PadCenter(string str, int length, char padChar = ' ')
-    {
-        var strLength = str.Length;
-        if (strLength > length)
-        {
-            str = str[..length];
-            strLength = length;
-        }
-
-        var numPadChars = length - strLength;
-        var padLeft = length - numPadChars / 2;
-        return str.PadLeft(padLeft, padChar).PadRight(length);
     }
 }
 

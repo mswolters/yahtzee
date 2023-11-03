@@ -20,14 +20,14 @@ internal class ConsolePlayer : IPlayablePlayer
     public Task StartGame(GameState state)
     {
         Console.WriteLine("Starting game");
-        state.SingleScoreboard.ScoreChanged += ScoreChanged;
+        state.Scoreboard.ScoreChanged += ScoreChanged;
         return Task.CompletedTask;
     }
 
     public Task EndGame(GameState state)
     {
         Console.WriteLine("End of game");
-        state.SingleScoreboard.ScoreChanged -= ScoreChanged;
+        state.Scoreboard.ScoreChanged -= ScoreChanged;
         return Task.CompletedTask;
     }
 
