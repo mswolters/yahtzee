@@ -6,12 +6,12 @@ namespace Yahtzee.Models;
 
 public class MultiScoreboard : INotifyPlayerScoreChanged
 {
-    public List<IPlayer> Players { get; }
-    public List<SingleScoreboard.IdRule> Rules { get; }
+    public IList<IPlayer> Players { get; }
+    public IList<SingleScoreboard.IdRule> Rules { get; }
 
     private readonly Dictionary<IPlayer, SingleScoreboard> _singleScoreboards = new();
 
-    public MultiScoreboard(List<IPlayer> players, List<SingleScoreboard.IdRule> rules)
+    public MultiScoreboard(IList<IPlayer> players, IList<SingleScoreboard.IdRule> rules)
     {
         Rules = rules;
         Players = players;
@@ -23,7 +23,7 @@ public class MultiScoreboard : INotifyPlayerScoreChanged
         }
     }
 
-    public MultiScoreboard(List<IPlayer> players, SingleScoreboard board)
+    public MultiScoreboard(IList<IPlayer> players, SingleScoreboard board)
         : this(players, board.RulesWithScores.Select(rs => new SingleScoreboard.IdRule(rs.Id, rs.Rule)).ToList())
     {
     }

@@ -6,37 +6,39 @@ using static Yahtzee.Models.TurnState.PickRuleTurnState.YahtzeeSpecialPickMode;
 
 namespace Yahtzee;
 
-internal class GameState : INotifyDiceRolled, INotifyDiceKept
+internal class GameManager : INotifyDiceRolled, INotifyDiceKept
 {
-    public SingleScoreboard Scoreboard { get; } = Scorer.DefaultBoard;
-
     public event DiceRolledEventHandler? DiceRolled;
     public event DiceKeptEventHandler? DiceKept;
 
     public int ThrowsPerTurn { get; }
     public int DicePerThrow { get; }
     public int SidesPerDie { get; }
-    
-    public bool HasEnded => Scoreboard[Scorer.SumRuleId].Score.Written;
 
-    public GameState(int throwsPerTurn = 3, int dicePerThrow = 5, int sidesPerDie = 6)
+    public GameManager(int throwsPerTurn = 3, int dicePerThrow = 5, int sidesPerDie = 6)
     {
         ThrowsPerTurn = throwsPerTurn;
         DicePerThrow = dicePerThrow;
         SidesPerDie = sidesPerDie;
     }
+    
+    public bool HasEnded(MultiScoreboard board) => board[board.Players.Last()][Scorer.SumRuleId].Score.Written;
 
-    internal async Task RunGame(IPlayablePlayer player, Random random)
+    internal async Task RunGame(Random random, params IPlayablePlayer[] players)
     {
-        await player.StartGame(this);
-        while (!HasEnded)
+        var scoreboard = new MultiScoreboard(players.OfType<IPlayer>().ToList(), Scorer.DefaultBoard);
+        Task.WaitAll(players.Select(player => player.StartGame(scoreboard)).ToArray());
+        while (!HasEnded(scoreboard))
         {
-            await DoTurn(player, random);
+            foreach (var player in players)
+            {
+                await DoTurn(scoreboard[player], player, random);
+            }
         }
-        await player.EndGame(this);
+        Task.WaitAll(players.Select(player => player.EndGame(scoreboard)).ToArray());
     }
     
-    internal async Task DoTurn(IPlayablePlayer player, Random random)
+    internal async Task DoTurn(SingleScoreboard playerBoard, IPlayablePlayer player, Random random)
     {
         var turnState = TurnState.StartOfTurn;
         // The player gets 3 turns, but can also finish early by choosing to hold all dice
@@ -45,21 +47,21 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             turnState = await DoPartialTurn(turnState, player, random);
         }
 
-        var yahtzeeSpecialCaseHasBeenApplied = await CheckAndExecuteYahtzeeSpecialCase(player, turnState.KeptDice);
+        var yahtzeeSpecialCaseHasBeenApplied = await CheckAndExecuteYahtzeeSpecialCase(playerBoard, player, turnState.KeptDice);
         if (yahtzeeSpecialCaseHasBeenApplied)
         {
             return;
         }
-        
+
         RuleId appliedRuleId;
         SingleScoreboard.RuleWithScore appliedRule;
         do
         {
             // Players are only allowed to pick rules which are playerWritable and which don't have a score yet.
-            appliedRuleId = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, turnState.KeptDice));
-            appliedRule = Scoreboard[appliedRuleId];
+            appliedRuleId = await player.PickRuleToApply(new TurnState.PickRuleTurnState(playerBoard, turnState.KeptDice));
+            appliedRule = playerBoard[appliedRuleId];
         } while (!appliedRule.Rule.IsPlayerWritable || appliedRule.Score.Written);
-        Scoreboard.SetScore(appliedRuleId, appliedRule.Rule.Score(turnState.KeptDice, Scoreboard));
+        playerBoard.SetScore(appliedRuleId, appliedRule.Rule.Score(turnState.KeptDice, playerBoard));
     }
 
     internal async Task<TurnState.RollTurnState> DoPartialTurn(TurnState.RollTurnState turnState, IPlayablePlayer player, Random random)
@@ -98,26 +100,26 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         return dice.Select(die => die.Roll(random)).ToList();
     }
     
-    private async Task<bool> CheckAndExecuteYahtzeeSpecialCase(IPlayablePlayer player, IList<DieRoll> finalKeptDice)
+    private async Task<bool> CheckAndExecuteYahtzeeSpecialCase(SingleScoreboard playerBoard, IPlayablePlayer player, IList<DieRoll> finalKeptDice)
     {
-        var yahtzee = Scoreboard[Scorer.YahtzeeRuleId];
+        var yahtzee = playerBoard[Scorer.YahtzeeRuleId];
         // No need to check anything when yahtzee isn't rolled
-        if (yahtzee.Rule.Score(finalKeptDice, Scoreboard).Value == 0) return false;
+        if (yahtzee.Rule.Score(finalKeptDice, playerBoard).Value == 0) return false;
         // No special case when yahtzee hasn't been rolled before
         if (!yahtzee.Score.Written) return false;
         // No special case when yahtzee has been striked through
         if (yahtzee.Score.Value == 0) return false;
         
         // Woohoo, bonus!
-        Scoreboard.SetScore(Scorer.YahtzeeRuleId, yahtzee.Score with { Value = yahtzee.Score.Value + 100 });
+        playerBoard.SetScore(Scorer.YahtzeeRuleId, yahtzee.Score with { Value = yahtzee.Score.Value + 100 });
 
         // Score the total of all 5 dice in the appropriate Upper Section box.
 
         var total = finalKeptDice.Sum(roll => roll.Value);
-        var relevantTopRule = Scoreboard[Scorer.TopRuleId(finalKeptDice[0])];
+        var relevantTopRule = playerBoard[Scorer.TopRuleId(finalKeptDice[0])];
         if (!relevantTopRule.Score.Written)
         {
-            Scoreboard.SetScore(relevantTopRule.Id, new Score(total));
+            playerBoard.SetScore(relevantTopRule.Id, new Score(total));
             return true;
         }
         
@@ -131,20 +133,20 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
         // If the appropriate Upper Section box and all Lower Section boxes are
         // all filled in, you must enter a zero in any Upper Section box.
         
-        var pickMode = Scoreboard[Scorer.BottomSumRuleId].Score.Written ? Top : Bottom;
+        var pickMode = playerBoard[Scorer.BottomSumRuleId].Score.Written ? Top : Bottom;
 
         RuleId appliedRuleId;
         SingleScoreboard.RuleWithScore appliedRule;
         do
         {
             // Players are only allowed to pick rules which are playerWritable and which don't have a score yet.
-            appliedRuleId = await player.PickRuleToApply(new TurnState.PickRuleTurnState(Scoreboard, finalKeptDice, pickMode));
-            appliedRule = Scoreboard[appliedRuleId];
-        } while (!appliedRule.Rule.IsPlayerWritable || appliedRule.Score.Written || !RuleFitsPickMode(appliedRule, pickMode));
+            appliedRuleId = await player.PickRuleToApply(new TurnState.PickRuleTurnState(playerBoard, finalKeptDice, pickMode));
+            appliedRule = playerBoard[appliedRuleId];
+        } while (!appliedRule.Rule.IsPlayerWritable || appliedRule.Score.Written || !RuleFitsPickMode(playerBoard, appliedRule, pickMode));
 
         if (pickMode == Top)
         {
-            Scoreboard.SetScore(appliedRuleId, new Score(0));
+            playerBoard.SetScore(appliedRuleId, new Score(0));
         }
         else
         {
@@ -153,20 +155,20 @@ internal class GameState : INotifyDiceRolled, INotifyDiceKept
             else if (appliedRuleId == Scorer.StraightRuleId(4)) scoreValue = 30;
             else if (appliedRuleId == Scorer.StraightRuleId(5)) scoreValue = 40;
             else scoreValue = total;
-            Scoreboard.SetScore(appliedRuleId, new Score(scoreValue));
+            playerBoard.SetScore(appliedRuleId, new Score(scoreValue));
         }
 
         return true;
 
     }
 
-    private bool RuleFitsPickMode(SingleScoreboard.RuleWithScore rule, TurnState.PickRuleTurnState.YahtzeeSpecialPickMode pickMode)
+    private bool RuleFitsPickMode(SingleScoreboard playerBoard, SingleScoreboard.RuleWithScore rule, TurnState.PickRuleTurnState.YahtzeeSpecialPickMode pickMode)
     {
         return pickMode switch
         {
             None => true,
-            Bottom => ((IDependOnRules)Scoreboard[Scorer.BottomSumRuleId].Rule).DependsOnIds.Contains(rule.Id),
-            Top => ((IDependOnRules)Scoreboard[Scorer.TopSubSumRuleId].Rule).DependsOnIds.Contains(rule.Id),
+            Bottom => ((IDependOnRules)playerBoard[Scorer.BottomSumRuleId].Rule).DependsOnIds.Contains(rule.Id),
+            Top => ((IDependOnRules)playerBoard[Scorer.TopSubSumRuleId].Rule).DependsOnIds.Contains(rule.Id),
             _ => throw new ArgumentOutOfRangeException(nameof(pickMode), pickMode, null)
         };
     }

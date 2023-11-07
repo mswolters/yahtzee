@@ -13,8 +13,8 @@ public interface IPlayer : INotifyPropertyChanged
 internal interface IPlayablePlayer : IPlayer
 {
 
-    public Task StartGame(GameState state);
-    public Task EndGame(GameState state);
+    public Task StartGame(MultiScoreboard board);
+    public Task EndGame(MultiScoreboard board);
     
     public Task<IList<DieRoll>> PickDiceToKeep(TurnState.RollTurnState state);
     public Task<RuleId> PickRuleToApply(TurnState.PickRuleTurnState state);

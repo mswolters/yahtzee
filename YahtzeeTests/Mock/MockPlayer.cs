@@ -25,13 +25,13 @@ internal class MockPlayer : IPlayablePlayer
         _pickRuleIndex = index;
     }
 
-    public Task StartGame(GameState state)
+    public Task StartGame(MultiScoreboard board)
     {
         StartGameWasCalled = true;
         return Task.CompletedTask;
     }
 
-    public Task EndGame(GameState state)
+    public Task EndGame(MultiScoreboard board)
     {
         EndGameWasCalled = true;
         return Task.CompletedTask;

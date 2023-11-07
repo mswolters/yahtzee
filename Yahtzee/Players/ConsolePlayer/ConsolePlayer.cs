@@ -17,17 +17,17 @@ internal class ConsolePlayer : IPlayablePlayer
     public event PropertyChangedEventHandler? PropertyChanged;
 
 
-    public Task StartGame(GameState state)
+    public Task StartGame(MultiScoreboard board)
     {
-        Console.WriteLine("Starting game");
-        state.Scoreboard.ScoreChanged += ScoreChanged;
+        Console.WriteLine($"{Name} Starting game");
+        board[this].ScoreChanged += ScoreChanged;
         return Task.CompletedTask;
     }
 
-    public Task EndGame(GameState state)
+    public Task EndGame(MultiScoreboard board)
     {
-        Console.WriteLine("End of game");
-        state.Scoreboard.ScoreChanged -= ScoreChanged;
+        Console.WriteLine($"{Name} Ending game");
+        board[this].ScoreChanged -= ScoreChanged;
         return Task.CompletedTask;
     }
 
