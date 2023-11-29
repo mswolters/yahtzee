@@ -7,6 +7,7 @@ namespace Yahtzee.Tests.Mock;
 
 internal class MockPlayer : IPlayablePlayer
 {
+    public Guid Id { get; init; } = Guid.NewGuid();
     public string Name { get => "MockPlayer"; set => throw new NotImplementedException(); }
     public bool StartGameWasCalled { get; set; }
     public bool EndGameWasCalled { get; set; }

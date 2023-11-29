@@ -6,11 +6,12 @@ namespace Yahtzee.Players;
 
 public interface IPlayer : INotifyPropertyChanged
 {
+    public Guid Id { get; init; }
     public string Name { get; set; }
 
 }
 
-internal interface IPlayablePlayer : IPlayer
+public interface IPlayablePlayer : IPlayer
 {
 
     public Task StartGame(MultiScoreboard board);

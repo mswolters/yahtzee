@@ -1,11 +1,19 @@
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Channels;
+using Yahtzee.NetworkCommon;
+using Yahtzee.NetworkCommon.Messages;
 
 namespace Yahtzee.Server;
 
 public class ConnectedClient : INotifyConnectionClosed
 {
+    private static readonly JsonSerializerOptions SerializeOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+    
     public int SocketId { get; }
     public WebSocket Socket { get; }
     public TaskCompletionSource<object> TaskCompletionSource { get; }
@@ -47,15 +55,10 @@ public class ConnectedClient : INotifyConnectionClosed
                             CancellationToken.None);
                         // the socket state changes to closed at this point
                     }
-
-
-                    // echo text or binary data to the broadcast queue
+                    
                     if (Socket.State == WebSocketState.Open)
                     {
-                        Console.WriteLine(
-                            $"Socket {SocketId}: Received {receiveResult.MessageType} frame ({receiveResult.Count} bytes).");
-                        string message = Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, receiveResult.Count);
-                        // TODO handle message
+                        OnMessageReceived(receiveResult, buffer);
                     }
                 }
             }
@@ -83,6 +86,30 @@ public class ConnectedClient : INotifyConnectionClosed
 
             // signal to the middleware pipeline that this task has completed
             TaskCompletionSource.SetResult(true);
+        }
+    }
+
+    private void OnMessageReceived(WebSocketReceiveResult receiveResult, ArraySegment<byte> buffer)
+    {
+        Console.WriteLine(
+            $"Socket {SocketId}: Received {receiveResult.MessageType} frame ({receiveResult.Count} bytes).");
+        var messageString = Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, receiveResult.Count);
+        try
+        {
+            var message = JsonSerializer.Deserialize<IMessage>(
+                new ReadOnlySpan<byte>(buffer.Array, 0, receiveResult.Count), SerializeOptions);
+
+            Console.WriteLine($"Socket {SocketId}: Received message: {message}");
+            // TODO handle message
+        }
+        catch (JsonException e)
+        {
+#if DEBUG
+            BroadcastQueue.Writer.TryWrite($"Invalid message: {e.Message}");
+#else
+            BroadcastQueue.Writer.TryWrite("Invalid message");
+#endif
+            throw;
         }
     }
 
