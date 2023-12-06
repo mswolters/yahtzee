@@ -11,4 +11,8 @@
       <ProjectReference Include="..\Yahtzee\Yahtzee.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="MessageHandler\" />
+    </ItemGroup>
+
 </Project>

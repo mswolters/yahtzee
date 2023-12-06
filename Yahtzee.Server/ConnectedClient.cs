@@ -2,12 +2,11 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
-using Yahtzee.NetworkCommon;
 using Yahtzee.NetworkCommon.Messages;
 
 namespace Yahtzee.Server;
 
-public class ConnectedClient : INotifyConnectionClosed
+public class ConnectedClient : INotifyConnectionClosed, INotifyMessageReceived
 {
     private static readonly JsonSerializerOptions SerializeOptions = new()
     {
@@ -93,14 +92,20 @@ public class ConnectedClient : INotifyConnectionClosed
     {
         Console.WriteLine(
             $"Socket {SocketId}: Received {receiveResult.MessageType} frame ({receiveResult.Count} bytes).");
-        var messageString = Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, receiveResult.Count);
         try
         {
             var message = JsonSerializer.Deserialize<IMessage>(
-                new ReadOnlySpan<byte>(buffer.Array, 0, receiveResult.Count), SerializeOptions);
+                new ReadOnlySpan<byte>(buffer.Array, 0, receiveResult.Count), SerializeOptions)!;
 
             Console.WriteLine($"Socket {SocketId}: Received message: {message}");
-            // TODO handle message
+            var handled = MessageReceived?.GetInvocationList()
+                .Cast<MessageReceivedEventHandler>()
+                .Aggregate(false, (current, handler) => current & handler(this, new MessageReceivedEventArgs(this, message))) ?? false;
+
+            if (!handled)
+            {
+                BroadcastQueue.Writer.TryWrite($"Unhandled incoming message type: {message.GetType().Name}");
+            }
         }
         catch (JsonException e)
         {
@@ -165,4 +170,5 @@ public class ConnectedClient : INotifyConnectionClosed
     }
 
     public event ConnectionClosedEventHandler? ConnectionClosed;
+    public event MessageReceivedEventHandler? MessageReceived;
 }
