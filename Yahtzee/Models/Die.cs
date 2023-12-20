@@ -11,11 +11,11 @@ public class Die
 
     internal DieRoll Roll(Random random)
     {
-        return new DieRoll(random.Next(this.Sides) + 1);
+        return new DieRoll(random.Next(Sides) + 1);
     }
 }
 
-public readonly record struct DieRoll(int Value)
+public readonly record struct DieRoll(int Value) : IWrapper<int>
 {
     public override string ToString()
     {

@@ -5,7 +5,7 @@ using Yahtzee.Models.Rules;
 
 namespace Yahtzee.Players.ConsolePlayer;
 
-internal class ConsolePlayer : IPlayablePlayer
+public class ConsolePlayer : IPlayablePlayer
 {
     public ConsolePlayer(string name)
     {

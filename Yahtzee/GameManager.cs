@@ -6,7 +6,7 @@ using static Yahtzee.Models.TurnState.PickRuleTurnState.YahtzeeSpecialPickMode;
 
 namespace Yahtzee;
 
-internal class GameManager : INotifyDiceRolled, INotifyDiceKept
+public class GameManager : INotifyDiceRolled, INotifyDiceKept
 {
     public event DiceRolledEventHandler? DiceRolled;
     public event DiceKeptEventHandler? DiceKept;
@@ -24,7 +24,7 @@ internal class GameManager : INotifyDiceRolled, INotifyDiceKept
     
     public bool HasEnded(MultiScoreboard board) => board[board.Players.Last()][Scorer.SumRuleId].Score.Written;
 
-    internal async Task RunGame(Random random, params IPlayablePlayer[] players)
+    public async Task RunGame(Random random, params IPlayablePlayer[] players)
     {
         var scoreboard = new MultiScoreboard(players.OfType<IPlayer>().ToList(), Scorer.DefaultBoard);
         Task.WaitAll(players.Select(player => player.StartGame(scoreboard)).ToArray());

@@ -5,11 +5,10 @@ namespace Yahtzee.Server;
 
 public class WebSocketMiddleware : IMiddleware
 {
-    private static int SocketCounter = 0;
+    private static int _socketCounter = 0;
 
     // The key is a socket id
-    private static ConcurrentDictionary<int, ConnectedClient>
-        Clients = new ConcurrentDictionary<int, ConnectedClient>();
+    private static readonly ConcurrentDictionary<int, ConnectedClient> _clients = new();
 
     private static readonly CancellationTokenSource SocketLoopTokenSource = new();
 
@@ -33,12 +32,13 @@ public class WebSocketMiddleware : IMiddleware
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
-                    var socketId = Interlocked.Increment(ref SocketCounter);
+                    var socketId = Interlocked.Increment(ref _socketCounter);
                     var socket = await context.WebSockets.AcceptWebSocketAsync();
                     var completion = new TaskCompletionSource<object>();
                     var client = new ConnectedClient(socketId, socket, completion);
                     client.ConnectionClosed += OnConnectionClosed;
-                    Clients.TryAdd(socketId, client);
+                    _clients.TryAdd(socketId, client);
+                    PlayerManager.Instance.OnClientConnected(client);
                     Console.WriteLine($"Socket {socketId}: New connection.");
 
                     // TaskCompletionSource<> is used to keep the middleware pipeline alive;
@@ -84,7 +84,7 @@ public class WebSocketMiddleware : IMiddleware
     public void OnConnectionClosed(object sender, ConnectionClosedEventArgs e)
     {
         // by this point the socket is closed or aborted, the ConnectedClient object is useless
-        if (Clients.TryRemove(e.Client.SocketId, out _))
+        if (_clients.TryRemove(e.Client.SocketId, out _))
             e.Client.Socket.Dispose();
     }
 
@@ -99,17 +99,17 @@ public class WebSocketMiddleware : IMiddleware
     {
         // We can't dispose the sockets until the processing loops are terminated,
         // but terminating the loops will abort the sockets, preventing graceful closing.
-        var disposeQueue = new List<WebSocket>(Clients.Count);
+        var disposeQueue = new List<WebSocket>(_clients.Count);
 
-        while (!Clients.IsEmpty)
+        while (!_clients.IsEmpty)
         {
-            var client = Clients.ElementAt(0).Value;
+            var client = _clients.ElementAt(0).Value;
             Console.WriteLine($"Closing Socket {client.SocketId}");
 
             Console.WriteLine("... ending broadcast loop");
             await client.Close();
 
-            if (Clients.TryRemove(client.SocketId, out _))
+            if (_clients.TryRemove(client.SocketId, out _))
             {
                 // only safe to Dispose once, so only add it if this loop can't process it again
                 disposeQueue.Add(client.Socket);

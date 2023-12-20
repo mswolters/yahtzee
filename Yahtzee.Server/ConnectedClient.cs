@@ -12,7 +12,7 @@ public class ConnectedClient : INotifyConnectionClosed, INotifyMessageReceived
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
-    
+
     public int SocketId { get; }
     public WebSocket Socket { get; }
     public TaskCompletionSource<object> TaskCompletionSource { get; }
@@ -54,7 +54,7 @@ public class ConnectedClient : INotifyConnectionClosed, INotifyMessageReceived
                             CancellationToken.None);
                         // the socket state changes to closed at this point
                     }
-                    
+
                     if (Socket.State == WebSocketState.Open)
                     {
                         OnMessageReceived(receiveResult, buffer);
@@ -100,7 +100,9 @@ public class ConnectedClient : INotifyConnectionClosed, INotifyMessageReceived
             Console.WriteLine($"Socket {SocketId}: Received message: {message}");
             var handled = MessageReceived?.GetInvocationList()
                 .Cast<MessageReceivedEventHandler>()
-                .Aggregate(false, (current, handler) => current & handler(this, new MessageReceivedEventArgs(this, message))) ?? false;
+                .Aggregate(false,
+                    (current, handler) =>
+                        current | handler(this, new MessageReceivedEventArgs(this, message))) ?? false;
 
             if (!handled)
             {
@@ -115,6 +117,40 @@ public class ConnectedClient : INotifyConnectionClosed, INotifyMessageReceived
             BroadcastQueue.Writer.TryWrite("Invalid message");
 #endif
             throw;
+        }
+    }
+
+    public void SendMessage(IMessage message)
+    {
+        var json = JsonSerializer.Serialize(message, SerializeOptions);
+        BroadcastQueue.Writer.TryWrite(json);
+    }
+
+    public Task<T> ReceiveMessage<T>() where T : IMessage
+    {
+        var completionSource = new TaskCompletionSource<T>();
+
+        MessageReceived += OnMessageReceivedEventHandler;
+        ConnectionClosed += OnConnectionClosed;
+
+        return completionSource.Task;
+
+        bool OnMessageReceivedEventHandler(object _, MessageReceivedEventArgs args)
+        {
+            if (args.Message is not T message) return false;
+
+            completionSource.SetResult(message);
+            MessageReceived -= OnMessageReceivedEventHandler;
+            ConnectionClosed -= OnConnectionClosed;
+            return true;
+        }
+
+
+        void OnConnectionClosed(object _, ConnectionClosedEventArgs args)
+        {
+            completionSource.SetCanceled();
+            MessageReceived -= OnMessageReceivedEventHandler;
+            ConnectionClosed -= OnConnectionClosed;
         }
     }
 
