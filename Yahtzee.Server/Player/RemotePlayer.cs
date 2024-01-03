@@ -12,13 +12,7 @@ public class RemotePlayer : IPlayablePlayer
     {
         Name = name;
         Client = client;
-        PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName == nameof(Name))
-            {
-                Client.SendMessage(new PlayerPropertyChangedMessage(this, nameof(Name)));
-            }
-        };
+        Client.ReceiveMessages<PlayerPropertyChangedMessage>(OnPropertyChangedMessage);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -50,5 +44,19 @@ public class RemotePlayer : IPlayablePlayer
         Client.SendMessage(new PickRuleToApplyMessage(state));
         var response = await Client.ReceiveMessage<PickRuleToApplyResponseMessage>();
         return response.RuleId;
+    }
+    
+    private bool OnPropertyChangedMessage(PlayerPropertyChangedMessage message)
+    {
+        if (message.Player.Id != Id) return false;
+
+        switch (message.ChangedProperty)
+        {
+            case nameof(Name):
+                Name = message.Player.Name;
+                return true;
+        }
+
+        return false;
     }
 }

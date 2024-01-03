@@ -154,6 +154,48 @@ public class ConnectedClient : INotifyConnectionClosed, INotifyMessageReceived
         }
     }
 
+    public interface IReceiveMessageHandle
+    {
+        public void StopReceiving();
+    }
+    
+    private class ReceiveMessageHandle : IReceiveMessageHandle
+    {
+        private readonly Action _onStopReceiving;
+
+        public ReceiveMessageHandle(Action onStopReceiving)
+        {
+            _onStopReceiving = onStopReceiving;
+        }
+        public void StopReceiving()
+        {
+            _onStopReceiving();
+        }
+    }
+    
+    public IReceiveMessageHandle ReceiveMessages<T>(Func<T, bool> callback) where T : IMessage
+    {
+        MessageReceived += OnMessageReceivedEventHandler;
+        ConnectionClosed += OnConnectionClosed;
+        
+        return new ReceiveMessageHandle(() => {
+            MessageReceived -= OnMessageReceivedEventHandler;
+            ConnectionClosed -= OnConnectionClosed;
+        });
+
+        void OnConnectionClosed(object _, ConnectionClosedEventArgs args)
+        {
+            MessageReceived -= OnMessageReceivedEventHandler;
+            ConnectionClosed -= OnConnectionClosed;
+        }
+
+        bool OnMessageReceivedEventHandler(object _, MessageReceivedEventArgs args)
+        {
+            if (args.Message is not T message) return false;
+            return callback(message);
+        }
+    }
+
     public async Task Close()
     {
         BroadcastLoopTokenSource.Cancel();

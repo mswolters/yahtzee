@@ -1,3 +1,4 @@
+using Yahtzee.NetworkCommon.Models;
 using Yahtzee.Players;
 
 namespace Yahtzee.NetworkCommon.Messages;
@@ -24,10 +25,10 @@ public class PlayerCreatedMessage : IServerMessage
 
 public class PlayerPropertyChangedMessage : IServerMessage, IClientMessage
 {
-    public IPlayer Player { get; }
+    public SimplePlayer Player { get; }
     public string ChangedProperty { get; }
     
-    public PlayerPropertyChangedMessage(IPlayer player, string changedProperty)
+    public PlayerPropertyChangedMessage(SimplePlayer player, string changedProperty)
     {
         Player = player;
         ChangedProperty = changedProperty;
