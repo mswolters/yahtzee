@@ -60,7 +60,8 @@ public class GameManager : INotifyDiceRolled, INotifyDiceKept
             // Players are only allowed to pick rules which are playerWritable and which don't have a score yet.
             appliedRuleId = await player.PickRuleToApply(new TurnState.PickRuleTurnState(playerBoard, turnState.KeptDice));
             appliedRule = playerBoard[appliedRuleId];
-        } while (!appliedRule.Rule.IsPlayerWritable || appliedRule.Score.Written);
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        } while (appliedRule.Rule == null || !appliedRule.Rule.IsPlayerWritable || appliedRule.Score.Written);
         playerBoard.SetScore(appliedRuleId, appliedRule.Rule.Score(turnState.KeptDice, playerBoard));
     }
 

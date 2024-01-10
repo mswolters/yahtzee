@@ -1,7 +1,5 @@
 using Yahtzee.NetworkCommon.Messages;
 using Yahtzee.NetworkCommon.Models;
-using Yahtzee.Players;
-using Yahtzee.Players.ConsolePlayer;
 using Yahtzee.Server.Player;
 
 namespace Yahtzee.Server;
